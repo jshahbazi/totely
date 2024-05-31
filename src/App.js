@@ -7,7 +7,7 @@ import { Container } from './styles';
 import { toast } from "react-toastify";
 
 import axios from "axios";
-import { S3Client, PutObjectCommand, GetObjectCommand, ListObjectsCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 const App = () => {
@@ -15,33 +15,22 @@ const App = () => {
   const [selectedFileId, setSelectedFileId] = useState(null);
 
   useEffect(() => {
-    fetchFilesFromBucket();
+    fetchFilesFromD1();
   }, []);
 
-  const fetchFilesFromBucket = async () => {
-    const bucket = process.env.REACT_APP_R2_BUCKET_NAME;
-
+  const fetchFilesFromD1 = async () => {
     try {
-      const r2 = new S3Client({
-        region: "auto",
-        endpoint: `https://${process.env.REACT_APP_R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
-        credentials: {
-          accessKeyId: process.env.REACT_APP_R2_ACCESS_KEY_ID,
-          secretAccessKey: process.env.REACT_APP_R2_SECRET_ACCESS_KEY,
-        },
-      });
-
-      const listCommand = new ListObjectsCommand({ Bucket: bucket });
-      const response = await r2.send(listCommand);
-
-      const fetchedFiles = response.Contents.map(item => ({
-        id: uuidv4(),
-        name: item.Key,
-        size: item.Size,
-        type: "unknown", // Placeholder, actual type may need to be determined
-        lastModified: item.LastModified,
-        filePath: item.Key,
-        bucket: bucket,
+      const response = await axios.get("/get_files_from_D1");
+      const fetchedFiles = response.data.map(file => ({
+        id: file.id,
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        lastModified: file.last_modified,
+        hash: file.hash,
+        extension: file.extension,
+        filePath: file.file_path,
+        bucket: file.bucket,
       }));
 
       setFiles(fetchedFiles);
@@ -83,11 +72,20 @@ const App = () => {
     return { id: newFile.id, signedUrl };
   };
 
-  const handleFileClick = (file) => {
+  const handleFileClick = async (file) => {
     if (selectedFileId === file.id) {
       setSelectedFileId(null); // Deselect if already selected
     } else {
-      setSelectedFileId(file.id);
+      try {
+        const response = await axios.get(`/get_file_details/${file.id}`);
+        setSelectedFileId(file.id);
+        const fileDetails = response.data;
+        const updatedFiles = files.map(f => f.id === file.id ? fileDetails : f);
+        setFiles(updatedFiles);
+      } catch (error) {
+        toast.error("Error fetching file details: " + error.message, { autoClose: 2000 });
+        console.error(error.message);
+      }
     }
   };
 
