@@ -17,10 +17,13 @@ const App = () => {
 
 
   const handleFileUpload = async (file) => {
+    const bucket = process.env.REACT_APP_R2_BUCKET_NAME;
     const generatedUUID = uuidv4();
     const hash = await hashImage(file);
-    const extension = getExtensionFromMimeType(file.type);
-    const filePath = `${generatedUUID}.${extension}`; //`${hash}.${extension}`;
+    // const extension = getExtensionFromMimeType(file.type);
+    const fileExtension = "jpg";
+    const newFileName = `${generatedUUID}.${fileExtension}`;
+    const proposedFilePath = `${newFileName}`;
 
     const newFile = {
       id: generatedUUID,
@@ -29,13 +32,21 @@ const App = () => {
       type: file.type,
       lastModified: file.lastModified,
       hash: hash,
-      extension: extension,
-      filePath: filePath,
-      bucket: process.env.REACT_APP_R2_BUCKET_NAME,      
+      extension: fileExtension,
+      filePath: proposedFilePath,
+      bucket: bucket,      
     };
     setFiles([...files, newFile]);
 
-    const signedUrl = await handleFile(file, newFile);
+    // const signedUrl = await handleFile(file, newFile);
+    let signedUrl = null;
+    try {
+      signedUrl = await handleFile(file, newFile);
+    } catch (error) {
+      toast.info("Error: " + error.message, { autoClose: 2000 });
+      console.error(error.message);
+      return;
+    } 
     return { id: newFile.id, signedUrl };
 
   };
@@ -121,27 +132,27 @@ const App = () => {
     return hashHex;
   }
 
-  function getExtensionFromMimeType(mimeType) {
-    const mimeToExtension = {
-      "image/jpeg": "jpg",
-      "image/png": "png",
-      "image/gif": "gif",
-      "image/webp": "webp",
-      "image/tiff": "tif",
-      "image/bmp": "bmp",
-      "image/svg+xml": "svg",
-      "audio/mpeg": "mp3",
-      "audio/wav": "wav",
-      "video/mp4": "mp4",
-      "application/pdf": "pdf",
-    };
+  // function getExtensionFromMimeType(mimeType) {
+  //   const mimeToExtension = {
+  //     "image/jpeg": "jpg",
+  //     "image/png": "png",
+  //     "image/gif": "gif",
+  //     "image/webp": "webp",
+  //     "image/tiff": "tif",
+  //     "image/bmp": "bmp",
+  //     "image/svg+xml": "svg",
+  //     "audio/mpeg": "mp3",
+  //     "audio/wav": "wav",
+  //     "video/mp4": "mp4",
+  //     "application/pdf": "pdf",
+  //   };
 
-    return mimeToExtension[mimeType] || null;
-  }
+  //   return mimeToExtension[mimeType] || null;
+  // }
 
   async function uploadFileWrapper(file, bucket, filePath, mimeType) {
     let signedUrl = await getSignedUrlForFile(filePath, bucket, "putObject");
-    let uploadStatus = await uploadFile(file, signedUrl, mimeType);
+    let uploadStatus = await uploadFile(file, signedUrl, "image/jpeg");
     console.log("uploadStatus: ", uploadStatus);    
     signedUrl = await getSignedUrlForFile(filePath, bucket, "getObject");
     return signedUrl;
