@@ -5,9 +5,6 @@ import FileList from './components/FileList';
 import FileDetail from './components/FileDetail';
 import { Container } from './styles';
 import { toast } from "react-toastify";
-// import UploadButton from "./components/Button";
-// import Spinner from "./components/Spinner";
-// import ImageList from "./components/Images";
 
 import axios from "axios";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
@@ -17,8 +14,6 @@ import { S3Client } from "@aws-sdk/client-s3";
 const App = () => {
   const [files, setFiles] = useState([]);
   const [selectedFileId, setSelectedFileId] = useState(null);
-  // const [uploading, setUploading] = useState(false);
-  // const [images, setImages] = useState([]);
 
 
   const handleFileUpload = async (file) => {
@@ -67,7 +62,7 @@ const App = () => {
     try {
       const r2 = new S3Client({
         region: "auto",
-        endpoint: `https://${process.env.REACT_APP_R2_ACCOUNT_ID}.r2.cloudflarestorage.com/${process.env.REACT_APP_R2_BUCKET_NAME}`,
+        endpoint: `https://${process.env.REACT_APP_R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
         credentials: {
           accessKeyId: process.env.REACT_APP_R2_ACCESS_KEY_ID,
           secretAccessKey: process.env.REACT_APP_R2_SECRET_ACCESS_KEY,
@@ -109,21 +104,13 @@ const App = () => {
           "Content-Type": mimeType || fileOrBlob.type || "application/octet-stream", // Use provided mimeType, or fileOrBlob's type, or default to 'application/octet-stream'      
         },
       };
-      const result = await axios.put(`https://2f038090c8a458e9474dbf1e0e4fe0e0.r2.cloudflarestorage.com/totely`, fileOrBlob, options);
+      const result = await axios.put(signedUrl, fileOrBlob, options);
       return result.status;
     } catch (error) {
       console.error("Error:", error.message);
     }
   }
 
-  // async function downloadFile(signedUrl) {
-  //   try {
-  //     const response = await axios.get(signedUrl, { responseType: "blob" });
-  //     return response.data;
-  //   } catch (error) {
-  //     console.error("Error:", error.message);
-  //   }
-  // }
 
   async function hashImage(file) {
     const arrayBuffer = await file.arrayBuffer();
@@ -160,15 +147,7 @@ const App = () => {
     return signedUrl;
   }
 
-  // async function addOrRetrieveFile(dataToSave) {
-  //   const options = {
-  //     headers: {
-  //       "Content-Type": "application/json",
-  //     },
-  //   };
-  //   const result = await axios.post("/write_to_D1", dataToSave, options);
-  //   return result.data;
-  // }
+
 
   async function handleFile(file, fileData) {
     // const { action, filePath } = await addOrRetrieveFile(fileData);
@@ -190,72 +169,6 @@ const App = () => {
     return signedUrl;
   }
 
-  // const removeImage = (id) => {
-  //   setImages((prevImages) => prevImages.filter((image) => image !== id));
-  // };
-
-
-  // const onImagesError = (image) => {
-  //   removeImage(image);
-  //   toast.error("Failed to load the image.");
-  // };
-
-  // const onChange = (e) => {
-  //   const files = Array.from(e.target.files);
-  //   setUploading(true);
-
-  //   const promises = files.map(async (file) => {
-  //     const id = uuidv4();
-  //     const hash = await hashImage(file);
-  //     const extension = getExtensionFromMimeType(file.type);
-  //     const filePath = `images/${hash}.${extension}`;
-  //     const imageData = {
-  //       id,
-  //       hash,
-  //       extension,
-  //       filePath,
-  //       bucket: process.env.REACT_APP_R2_BUCKET_NAME,
-  //     };
-
-  //     const signedUrl = await handleFile(file, imageData);
-  //     return { id, signedUrl };
-  //   });
-
-  //   Promise.all(promises)
-  //     .then((images) => {
-  //       setImages((prevImages) => [...prevImages, ...images]);
-  //       setUploading(false);
-  //     })
-  //     .catch((error) => {
-  //       console.error("Error:", error.message);
-  //       setUploading(false);
-  //     });
-  // }
-
-
-
-
-
-  // const content = () => {
-  //   switch (true) {
-  //     case uploading:
-  //       return <Spinner />;
-  //     case images.length > 0:
-  //       return (
-  //         <div className="container">
-  //           <div className="image-list">
-  //             <ImageList images={images} removeImage={removeImage} onError={onImagesError} />
-  //           </div>
-  //         </div>
-  //       );
-  //     default:
-  //       return (
-  //         <div>
-  //           <UploadButton onChange={onChange} />
-  //         </div>
-  //       );
-  //   }
-  // };  
 
   return (
     <Container>
