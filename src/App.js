@@ -78,10 +78,14 @@ const App = () => {
     } else {
       try {
         const response = await axios.get(`/get_file_details/${file.id}`);
-        setSelectedFileId(file.id);
         const fileDetails = response.data;
-        const updatedFiles = files.map(f => f.id === file.id ? fileDetails : f);
+        const updatedFiles = files.map(f => f.id === file.id ? {
+          ...f,
+          ...fileDetails,
+          lastModified: new Date(fileDetails.last_modified).toISOString(), // Ensure date format consistency
+        } : f);
         setFiles(updatedFiles);
+        setSelectedFileId(file.id);
       } catch (error) {
         toast.error("Error fetching file details: " + error.message, { autoClose: 2000 });
         console.error(error.message);
