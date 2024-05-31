@@ -12,7 +12,7 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 const App = () => {
   const [files, setFiles] = useState([]);
-  const [selectedFileId, setSelectedFileId] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
 
   useEffect(() => {
     fetchFilesFromD1();
@@ -26,7 +26,7 @@ const App = () => {
         name: file.name,
         size: file.size,
         type: file.type,
-        last_modified: file.last_modified,
+        lastModified: new Date(file.last_modified).toISOString(), // Convert to ISO string
         hash: file.hash,
         extension: file.extension,
         filePath: file.file_path,
@@ -53,7 +53,7 @@ const App = () => {
       name: file.name,
       size: file.size,
       type: file.type,
-      last_modified: file.last_modified,
+      lastModified: file.lastModified,
       hash: hash,
       extension: fileExtension,
       filePath: proposedFilePath,
@@ -73,18 +73,15 @@ const App = () => {
   };
 
   const handleFileClick = async (file) => {
-    if (selectedFileId === file.id) {
-      setSelectedFileId(null); // Deselect if already selected
+    if (selectedFile?.id === file.id) {
+      setSelectedFile(null); // Deselect if already selected
     } else {
       try {
         const response = await axios.get(`/get_file_details/${file.id}`);
         const fileDetails = response.data;
-        const updatedFiles = files.map(f => f.id === file.id ? {
-          ...f,
+        setSelectedFile({
           ...fileDetails,
-        } : f);
-        setFiles(updatedFiles);
-        setSelectedFileId(file.id);
+        });
       } catch (error) {
         toast.error("Error fetching file details: " + error.message, { autoClose: 2000 });
         console.error(error.message);
@@ -99,8 +96,8 @@ const App = () => {
     try {
       await deleteFileFromBucket(fileToDelete.filePath, fileToDelete.bucket);
       setFiles(files.filter((file) => file.id !== id));
-      if (selectedFileId === id) {
-        setSelectedFileId(null);
+      if (selectedFile?.id === id) {
+        setSelectedFile(null);
       }
       toast.info("File deleted successfully", { autoClose: 2000 });
     } catch (error) {
@@ -108,8 +105,6 @@ const App = () => {
       console.error(error.message);
     }
   };
-
-  const selectedFile = files.find(file => file.id === selectedFileId);
 
   async function getSignedUrlForFile(key, bucket, action = "putObject") {
     try {
