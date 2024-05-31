@@ -7,9 +7,8 @@ import { Container } from './styles';
 import { toast } from "react-toastify";
 
 import axios from "axios";
+import { S3Client, PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
-import { S3Client } from "@aws-sdk/client-s3";
 
 const App = () => {
   const [files, setFiles] = useState([]);
@@ -20,8 +19,7 @@ const App = () => {
     const bucket = process.env.REACT_APP_R2_BUCKET_NAME;
     const generatedUUID = uuidv4();
     const hash = await hashImage(file);
-    // const extension = getExtensionFromMimeType(file.type);
-    const fileExtension = "jpg";
+    const fileExtension = getExtensionFromMimeType(file.type);
     const newFileName = `${generatedUUID}.${fileExtension}`;
     const proposedFilePath = `${newFileName}`;
 
@@ -38,7 +36,6 @@ const App = () => {
     };
     setFiles([...files, newFile]);
 
-    // const signedUrl = await handleFile(file, newFile);
     let signedUrl = null;
     try {
       signedUrl = await handleFile(file, newFile);
@@ -152,7 +149,7 @@ const App = () => {
 
   async function uploadFileWrapper(file, bucket, filePath, mimeType) {
     let signedUrl = await getSignedUrlForFile(filePath, bucket, "putObject");
-    let uploadStatus = await uploadFile(file, signedUrl, "image/jpeg");
+    let uploadStatus = await uploadFile(file, signedUrl, mimeType);
     console.log("uploadStatus: ", uploadStatus);    
     signedUrl = await getSignedUrlForFile(filePath, bucket, "getObject");
     return signedUrl;
@@ -170,7 +167,7 @@ const App = () => {
     if (action === "add") {
       toast.info("Uploading file...", { autoClose: 2000 });
       console.log("Uploading file...")
-      signedUrl = await uploadFileWrapper(file, fileData.bucket, filePath);
+      signedUrl = await uploadFileWrapper(file, fileData.bucket, filePath, file.type);
     } else if (action === "retrieve") {
       toast.info("File already exists. Retrieving...", { autoClose: 2000 });
       console.log("File already exists. Retrieving...")
