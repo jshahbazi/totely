@@ -218,9 +218,18 @@ const App = () => {
     }
   }
 
+  async function addOrRetrieveFile(dataToSave) {
+    const options = {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    };
+    const result = await axios.post("/write_to_D1", dataToSave, options);
+    return result.data;
+  }
+
   async function handleFile(file, fileData) {
-    const action = "add";
-    const filePath = fileData.filePath;
+    const { action, filePath } = await addOrRetrieveFile(fileData);
     console.log("fileData: ", fileData);
     let signedUrl = null;
 
