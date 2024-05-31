@@ -109,7 +109,7 @@ const App = () => {
           "Content-Type": mimeType || fileOrBlob.type || "application/octet-stream", // Use provided mimeType, or fileOrBlob's type, or default to 'application/octet-stream'      
         },
       };
-      const result = await axios.put(`https://totely.2f038090c8a458e9474dbf1e0e4fe0e0.r2.cloudflarestorage.com/totely/`, fileOrBlob, options);
+      const result = await axios.put(`https://2f038090c8a458e9474dbf1e0e4fe0e0.r2.cloudflarestorage.com/totely`, fileOrBlob, options);
       return result.status;
     } catch (error) {
       console.error("Error:", error.message);
