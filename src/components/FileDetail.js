@@ -9,7 +9,7 @@ const FileDetail = ({ file }) => {
       <p><strong>Name:</strong> {file.name}</p>
       <p><strong>Size:</strong> {file.size} bytes</p>
       <p><strong>Type:</strong> {file.type}</p>
-      <p><strong>Last Modified:</strong> {new Date(file.lastModified).toLocaleString()}</p>
+      <p><strong>Last Modified:</strong> {file.last_modified}</p>
       <p><strong>Hash:</strong> {file.hash}</p>
       <p><strong>Extension:</strong> {file.extension}</p>
       <p><strong>File Path:</strong> {file.filePath}</p>

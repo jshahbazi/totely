@@ -26,7 +26,7 @@ const App = () => {
         name: file.name,
         size: file.size,
         type: file.type,
-        last_modified: new Date(file.last_modified).toISOString(), // Convert to ISO string
+        last_modified: new Date(Number(file.last_modified)).toISOString(), // Convert to ISO string
         hash: file.hash,
         extension: file.extension,
         filePath: file.file_path,
