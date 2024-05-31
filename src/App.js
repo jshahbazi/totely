@@ -26,7 +26,7 @@ const App = () => {
         name: file.name,
         size: file.size,
         type: file.type,
-        lastModified: new Date(file.last_modified).toISOString(), // Convert to ISO string
+        last_modified: new Date(file.last_modified).toISOString(), // Convert to ISO string
         hash: file.hash,
         extension: file.extension,
         filePath: file.file_path,
@@ -53,7 +53,7 @@ const App = () => {
       name: file.name,
       size: file.size,
       type: file.type,
-      lastModified: file.lastModified,
+      last_modified: file.last_modified,
       hash: hash,
       extension: fileExtension,
       filePath: proposedFilePath,
@@ -79,9 +79,13 @@ const App = () => {
       try {
         const response = await axios.get(`/get_file_details/${file.id}`);
         const fileDetails = response.data;
-        setSelectedFile({
+        const updatedFile = {
+          ...file,
           ...fileDetails,
-        });
+        };
+        const updatedFiles = files.map(f => f.id === file.id ? updatedFile : f);
+        setFiles(updatedFiles);
+        setSelectedFile(updatedFile);
       } catch (error) {
         toast.error("Error fetching file details: " + error.message, { autoClose: 2000 });
         console.error(error.message);
