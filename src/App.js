@@ -7,13 +7,12 @@ import { Container } from './styles';
 import { toast } from "react-toastify";
 
 import axios from "axios";
-import { S3Client, PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 const App = () => {
   const [files, setFiles] = useState([]);
   const [selectedFileId, setSelectedFileId] = useState(null);
-
 
   const handleFileUpload = async (file) => {
     const bucket = process.env.REACT_APP_R2_BUCKET_NAME;
@@ -45,7 +44,6 @@ const App = () => {
       return;
     } 
     return { id: newFile.id, signedUrl };
-
   };
 
   const handleFileClick = (file) => {
@@ -56,15 +54,24 @@ const App = () => {
     }
   };
 
-  const handleFileDelete = (id) => {
-    setFiles(files.filter((file) => file.id !== id));
-    if (selectedFileId === id) {
-      setSelectedFileId(null);
+  const handleFileDelete = async (id) => {
+    const fileToDelete = files.find((file) => file.id === id);
+    if (!fileToDelete) return;
+
+    try {
+      await deleteFileFromBucket(fileToDelete.filePath, fileToDelete.bucket);
+      setFiles(files.filter((file) => file.id !== id));
+      if (selectedFileId === id) {
+        setSelectedFileId(null);
+      }
+      toast.info("File deleted successfully", { autoClose: 2000 });
+    } catch (error) {
+      toast.error("Error deleting file: " + error.message, { autoClose: 2000 });
+      console.error(error.message);
     }
   };
 
   const selectedFile = files.find(file => file.id === selectedFileId);
-
 
   async function getSignedUrlForFile(key, bucket, action = "putObject") {
     try {
@@ -96,6 +103,15 @@ const App = () => {
           }),
           { expiresIn: 60 }
         );
+      } else if (action === "deleteObject") {
+        signedUrl = await getSignedUrl(
+          r2,
+          new DeleteObjectCommand({
+            Bucket: bucket,
+            Key: key,
+          }),
+          { expiresIn: 60 }
+        );
       }
 
       return signedUrl;
@@ -118,7 +134,6 @@ const App = () => {
       console.error("Error:", error.message);
     }
   }
-
 
   async function hashImage(file) {
     const arrayBuffer = await file.arrayBuffer();
@@ -155,7 +170,16 @@ const App = () => {
     return signedUrl;
   }
 
-
+  async function deleteFileFromBucket(filePath, bucket) {
+    let signedUrl = await getSignedUrlForFile(filePath, bucket, "deleteObject");
+    try {
+      const result = await axios.delete(signedUrl);
+      return result.status;
+    } catch (error) {
+      console.error("Error:", error.message);
+      throw new Error("Failed to delete file from bucket");
+    }
+  }
 
   async function handleFile(file, fileData) {
     // const { action, filePath } = await addOrRetrieveFile(fileData);
@@ -166,17 +190,16 @@ const App = () => {
 
     if (action === "add") {
       toast.info("Uploading file...", { autoClose: 2000 });
-      console.log("Uploading file...")
+      console.log("Uploading file...");
       signedUrl = await uploadFileWrapper(file, fileData.bucket, filePath, file.type);
     } else if (action === "retrieve") {
       toast.info("File already exists. Retrieving...", { autoClose: 2000 });
-      console.log("File already exists. Retrieving...")
+      console.log("File already exists. Retrieving...");
       signedUrl = await getSignedUrlForFile(filePath, fileData.bucket, "getObject");
     }
     console.log("signedUrl: ", signedUrl);
     return signedUrl;
   }
-
 
   return (
     <Container>
@@ -185,7 +208,7 @@ const App = () => {
       <FileUpload onFileUpload={handleFileUpload} />
       <FileList files={files} onFileClick={handleFileClick} onFileDelete={handleFileDelete} />
       {selectedFile && <FileDetail file={selectedFile} />}
-      {/* <div className="buttons">{content()}</div>       */}
+      {/* <div className="buttons">{content()}</div> */}
     </Container>
   );
 };
