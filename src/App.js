@@ -129,23 +129,23 @@ const App = () => {
     return hashHex;
   }
 
-  // function getExtensionFromMimeType(mimeType) {
-  //   const mimeToExtension = {
-  //     "image/jpeg": "jpg",
-  //     "image/png": "png",
-  //     "image/gif": "gif",
-  //     "image/webp": "webp",
-  //     "image/tiff": "tif",
-  //     "image/bmp": "bmp",
-  //     "image/svg+xml": "svg",
-  //     "audio/mpeg": "mp3",
-  //     "audio/wav": "wav",
-  //     "video/mp4": "mp4",
-  //     "application/pdf": "pdf",
-  //   };
+  function getExtensionFromMimeType(mimeType) {
+    const mimeToExtension = {
+      "image/jpeg": "jpg",
+      "image/png": "png",
+      "image/gif": "gif",
+      "image/webp": "webp",
+      "image/tiff": "tif",
+      "image/bmp": "bmp",
+      "image/svg+xml": "svg",
+      "audio/mpeg": "mp3",
+      "audio/wav": "wav",
+      "video/mp4": "mp4",
+      "application/pdf": "pdf",
+    };
 
-  //   return mimeToExtension[mimeType] || null;
-  // }
+    return mimeToExtension[mimeType] || null;
+  }
 
   async function uploadFileWrapper(file, bucket, filePath, mimeType) {
     let signedUrl = await getSignedUrlForFile(filePath, bucket, "putObject");
