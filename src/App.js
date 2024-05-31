@@ -171,6 +171,7 @@ const App = () => {
     // const { action, filePath } = await addOrRetrieveFile(fileData);
     const action = "add";
     const filePath = fileData.filePath;
+    console.log("fileData: ", fileData);
     let signedUrl = null;
 
     if (action === "add") {
