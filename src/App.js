@@ -67,7 +67,7 @@ const App = () => {
     try {
       const r2 = new S3Client({
         region: "auto",
-        endpoint: `https://${process.env.REACT_APP_R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+        endpoint: `https://${process.env.REACT_APP_R2_ACCOUNT_ID}.r2.cloudflarestorage.com\totely`,
         credentials: {
           accessKeyId: process.env.REACT_APP_R2_ACCESS_KEY_ID,
           secretAccessKey: process.env.REACT_APP_R2_SECRET_ACCESS_KEY,
@@ -106,8 +106,7 @@ const App = () => {
     try {
       const options = {
         headers: {
-          "Content-Type": mimeType || fileOrBlob.type || "application/octet-stream", // Use provided mimeType, or fileOrBlob's type, or default to 'application/octet-stream'
-          "Origin": "https://6730e3e5.totely.pages.dev",        
+          "Content-Type": mimeType || fileOrBlob.type || "application/octet-stream", // Use provided mimeType, or fileOrBlob's type, or default to 'application/octet-stream'      
         },
       };
       const result = await axios.put(signedUrl, fileOrBlob, options);
@@ -260,7 +259,7 @@ const App = () => {
 
   return (
     <Container>
-      <ToastContainer />
+      {/* <ToastContainer /> */}
       <h1>Digital Asset Manager</h1>
       <FileUpload onFileUpload={handleFileUpload} />
       <FileList files={files} onFileClick={handleFileClick} onFileDelete={handleFileDelete} />
