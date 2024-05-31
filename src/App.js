@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import FileUpload from './components/FileUpload';
 import FileList from './components/FileList';
@@ -7,12 +7,49 @@ import { Container } from './styles';
 import { toast } from "react-toastify";
 
 import axios from "axios";
-import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, PutObjectCommand, GetObjectCommand, ListObjectsCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 const App = () => {
   const [files, setFiles] = useState([]);
   const [selectedFileId, setSelectedFileId] = useState(null);
+
+  useEffect(() => {
+    fetchFilesFromBucket();
+  }, []);
+
+  const fetchFilesFromBucket = async () => {
+    const bucket = process.env.REACT_APP_R2_BUCKET_NAME;
+
+    try {
+      const r2 = new S3Client({
+        region: "auto",
+        endpoint: `https://${process.env.REACT_APP_R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+        credentials: {
+          accessKeyId: process.env.REACT_APP_R2_ACCESS_KEY_ID,
+          secretAccessKey: process.env.REACT_APP_R2_SECRET_ACCESS_KEY,
+        },
+      });
+
+      const listCommand = new ListObjectsCommand({ Bucket: bucket });
+      const response = await r2.send(listCommand);
+
+      const fetchedFiles = response.Contents.map(item => ({
+        id: uuidv4(),
+        name: item.Key,
+        size: item.Size,
+        type: "unknown", // Placeholder, actual type may need to be determined
+        lastModified: item.LastModified,
+        filePath: item.Key,
+        bucket: bucket,
+      }));
+
+      setFiles(fetchedFiles);
+    } catch (error) {
+      toast.error("Error fetching files: " + error.message, { autoClose: 2000 });
+      console.error(error.message);
+    }
+  };
 
   const handleFileUpload = async (file) => {
     const bucket = process.env.REACT_APP_R2_BUCKET_NAME;
@@ -31,7 +68,7 @@ const App = () => {
       hash: hash,
       extension: fileExtension,
       filePath: proposedFilePath,
-      bucket: bucket,      
+      bucket: bucket,
     };
     setFiles([...files, newFile]);
 
@@ -42,7 +79,7 @@ const App = () => {
       toast.info("Error: " + error.message, { autoClose: 2000 });
       console.error(error.message);
       return;
-    } 
+    }
     return { id: newFile.id, signedUrl };
   };
 
@@ -125,7 +162,7 @@ const App = () => {
     try {
       const options = {
         headers: {
-          "Content-Type": mimeType || fileOrBlob.type || "application/octet-stream", // Use provided mimeType, or fileOrBlob's type, or default to 'application/octet-stream'      
+          "Content-Type": mimeType || fileOrBlob.type || "application/octet-stream",
         },
       };
       const result = await axios.put(signedUrl, fileOrBlob, options);
@@ -165,7 +202,7 @@ const App = () => {
   async function uploadFileWrapper(file, bucket, filePath, mimeType) {
     let signedUrl = await getSignedUrlForFile(filePath, bucket, "putObject");
     let uploadStatus = await uploadFile(file, signedUrl, mimeType);
-    console.log("uploadStatus: ", uploadStatus);    
+    console.log("uploadStatus: ", uploadStatus);
     signedUrl = await getSignedUrlForFile(filePath, bucket, "getObject");
     return signedUrl;
   }
@@ -182,7 +219,6 @@ const App = () => {
   }
 
   async function handleFile(file, fileData) {
-    // const { action, filePath } = await addOrRetrieveFile(fileData);
     const action = "add";
     const filePath = fileData.filePath;
     console.log("fileData: ", fileData);
@@ -203,12 +239,10 @@ const App = () => {
 
   return (
     <Container>
-      {/* <ToastContainer /> */}
       <h1>Digital Asset Manager</h1>
       <FileUpload onFileUpload={handleFileUpload} />
       <FileList files={files} onFileClick={handleFileClick} onFileDelete={handleFileDelete} />
       {selectedFile && <FileDetail file={selectedFile} />}
-      {/* <div className="buttons">{content()}</div> */}
     </Container>
   );
 };
