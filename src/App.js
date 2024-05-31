@@ -4,7 +4,7 @@ import FileUpload from './components/FileUpload';
 import FileList from './components/FileList';
 import FileDetail from './components/FileDetail';
 import { Container } from './styles';
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
 // import UploadButton from "./components/Button";
 // import Spinner from "./components/Spinner";
 // import ImageList from "./components/Images";
@@ -107,9 +107,7 @@ const App = () => {
       const options = {
         headers: {
           "Content-Type": mimeType || fileOrBlob.type || "application/octet-stream", // Use provided mimeType, or fileOrBlob's type, or default to 'application/octet-stream'
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Methods": "GET,HEAD,POST,PUT,OPTIONS",
-          "Access-Control-Max-Age": "86400",          
+          "Origin": "https://6730e3e5.totely.pages.dev",        
         },
       };
       const result = await axios.put(signedUrl, fileOrBlob, options);
@@ -262,6 +260,7 @@ const App = () => {
 
   return (
     <Container>
+      <ToastContainer />
       <h1>Digital Asset Manager</h1>
       <FileUpload onFileUpload={handleFileUpload} />
       <FileList files={files} onFileClick={handleFileClick} onFileDelete={handleFileDelete} />
