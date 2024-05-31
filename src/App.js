@@ -101,19 +101,19 @@ const App = () => {
     }
   }
 
-  // async function uploadFile(fileOrBlob, signedUrl, mimeType) {
-  //   try {
-  //     const options = {
-  //       headers: {
-  //         "Content-Type": mimeType || fileOrBlob.type || "application/octet-stream", // Use provided mimeType, or fileOrBlob's type, or default to 'application/octet-stream'
-  //       },
-  //     };
-  //     const result = await axios.put(signedUrl, fileOrBlob, options);
-  //     return result.status;
-  //   } catch (error) {
-  //     console.error("Error:", error.message);
-  //   }
-  // }
+  async function uploadFile(fileOrBlob, signedUrl, mimeType) {
+    try {
+      const options = {
+        headers: {
+          "Content-Type": mimeType || fileOrBlob.type || "application/octet-stream", // Use provided mimeType, or fileOrBlob's type, or default to 'application/octet-stream'
+        },
+      };
+      const result = await axios.put(signedUrl, fileOrBlob, options);
+      return result.status;
+    } catch (error) {
+      console.error("Error:", error.message);
+    }
+  }
 
   // async function downloadFile(signedUrl) {
   //   try {
@@ -151,8 +151,10 @@ const App = () => {
     return mimeToExtension[mimeType] || null;
   }
 
-  async function uploadFile(file, bucket, filePath) {
+  async function uploadFileWrapper(file, bucket, filePath, mimeType) {
     let signedUrl = await getSignedUrlForFile(filePath, bucket, "putObject");
+    let uploadStatus = await uploadFile(file, signedUrl, mimeType);
+    console.log("uploadStatus: ", uploadStatus);    
     signedUrl = await getSignedUrlForFile(filePath, bucket, "getObject");
     return signedUrl;
   }
@@ -176,11 +178,14 @@ const App = () => {
 
     if (action === "add") {
       toast.info("Uploading file...", { autoClose: 2000 });
-      signedUrl = await uploadFile(file, fileData.bucket, filePath);
+      console.log("Uploading file...")
+      signedUrl = await uploadFileWrapper(file, fileData.bucket, filePath);
     } else if (action === "retrieve") {
       toast.info("File already exists. Retrieving...", { autoClose: 2000 });
+      console.log("File already exists. Retrieving...")
       signedUrl = await getSignedUrlForFile(filePath, fileData.bucket, "getObject");
     }
+    console.log("signedUrl: ", signedUrl);
     return signedUrl;
   }
 
