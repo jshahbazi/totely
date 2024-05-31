@@ -5,9 +5,9 @@ import FileList from './components/FileList';
 import FileDetail from './components/FileDetail';
 import { Container } from './styles';
 import { toast } from "react-toastify";
-import UploadButton from "./components/Button";
-import Spinner from "./components/Spinner";
-import ImageList from "./components/Images";
+// import UploadButton from "./components/Button";
+// import Spinner from "./components/Spinner";
+// import ImageList from "./components/Images";
 
 import axios from "axios";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
@@ -17,23 +17,31 @@ import { S3Client } from "@aws-sdk/client-s3";
 const App = () => {
   const [files, setFiles] = useState([]);
   const [selectedFileId, setSelectedFileId] = useState(null);
-
-  // const [loading, setLoading] = useState(true);
-  const [uploading, setUploading] = useState(false);
-  const [images, setImages] = useState([]);
-  // const [status, setStatus] = useState("");
-  // const [objectData, setObjectData] = useState([]);
+  // const [uploading, setUploading] = useState(false);
+  // const [images, setImages] = useState([]);
 
 
-  const handleFileUpload = (file) => {
+  const handleFileUpload = async (file) => {
+    const hash = await hashImage(file);
+    const extension = getExtensionFromMimeType(file.type);
+    const filePath = `assets/${hash}.${extension}`;
+
     const newFile = {
       id: uuidv4(),
       name: file.name,
       size: file.size,
       type: file.type,
       lastModified: file.lastModified,
+      hash: hash,
+      extension: extension,
+      filePath: filePath,
+      bucket: process.env.R2_BUCKET_NAME,      
     };
     setFiles([...files, newFile]);
+
+    const signedUrl = await handleFile(file, newFile);
+    return { id: newFile.id, signedUrl };
+
   };
 
   const handleFileClick = (file) => {
@@ -58,10 +66,10 @@ const App = () => {
     try {
       const r2 = new S3Client({
         region: "auto",
-        endpoint: `https://${process.env.REACT_APP_R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+        endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
         credentials: {
-          accessKeyId: process.env.REACT_APP_R2_ACCESS_KEY_ID,
-          secretAccessKey: process.env.REACT_APP_R2_SECRET_ACCESS_KEY,
+          accessKeyId: process.env.R2_ACCESS_KEY_ID,
+          secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
         },
       });
 
@@ -143,102 +151,102 @@ const App = () => {
     return mimeToExtension[mimeType] || null;
   }
 
-  async function uploadImage(file, bucket, filePath) {
+  async function uploadFile(file, bucket, filePath) {
     let signedUrl = await getSignedUrlForFile(filePath, bucket, "putObject");
-    // let uploadStatus = await uploadFile(file, signedUrl, "image/jpeg");
-    // console.log("uploadStatus: ", uploadStatus);
     signedUrl = await getSignedUrlForFile(filePath, bucket, "getObject");
     return signedUrl;
   }
 
-  async function addOrRetrieveImage(dataToSave) {
+  async function addOrRetrieveFile(dataToSave) {
     const options = {
       headers: {
         "Content-Type": "application/json",
       },
     };
-    const result = await axios.post("/write_to_r1", dataToSave, options);
+    const result = await axios.post("/write_to_D1", dataToSave, options);
     return result.data;
   }
 
-  async function handleImage(file, imageData) {
-    const { action, filePath } = await addOrRetrieveImage(imageData);
+  async function handleFile(file, fileData) {
+    const { action, filePath } = await addOrRetrieveFile(fileData);
     let signedUrl = null;
 
     if (action === "add") {
-      toast.info("Uploading image...", { autoClose: 2000 });
-      // setStatus("Uploading image...")
-      signedUrl = await uploadImage(file, imageData.bucket, filePath);
+      toast.info("Uploading file...", { autoClose: 2000 });
+      signedUrl = await uploadFile(file, fileData.bucket, filePath);
     } else if (action === "retrieve") {
-      toast.info("Image already exists. Retrieving...", { autoClose: 2000 });
-      // setStatus("Image already exists. Retrieving...")
-      signedUrl = await getSignedUrlForFile(filePath, imageData.bucket, "getObject");
+      toast.info("File already exists. Retrieving...", { autoClose: 2000 });
+      signedUrl = await getSignedUrlForFile(filePath, fileData.bucket, "getObject");
     }
     return signedUrl;
   }
 
-  const removeImage = (id) => {
-    setImages((prevImages) => prevImages.filter((image) => image !== id));
-  };
+  // const removeImage = (id) => {
+  //   setImages((prevImages) => prevImages.filter((image) => image !== id));
+  // };
 
 
-  const onImagesError = (image) => {
-    removeImage(image);
-    toast.error("Failed to load the image.");
-  };
+  // const onImagesError = (image) => {
+  //   removeImage(image);
+  //   toast.error("Failed to load the image.");
+  // };
 
-  const onChange = (e) => {
-    const files = Array.from(e.target.files);
-    setUploading(true);
+  // const onChange = (e) => {
+  //   const files = Array.from(e.target.files);
+  //   setUploading(true);
 
-    const promises = files.map(async (file) => {
-      const id = uuidv4();
-      const hash = await hashImage(file);
-      const extension = getExtensionFromMimeType(file.type);
-      const filePath = `images/${hash}.${extension}`;
-      const imageData = {
-        id,
-        hash,
-        extension,
-        filePath,
-        bucket: process.env.REACT_APP_R1_BUCKET_NAME,
-      };
+  //   const promises = files.map(async (file) => {
+  //     const id = uuidv4();
+  //     const hash = await hashImage(file);
+  //     const extension = getExtensionFromMimeType(file.type);
+  //     const filePath = `images/${hash}.${extension}`;
+  //     const imageData = {
+  //       id,
+  //       hash,
+  //       extension,
+  //       filePath,
+  //       bucket: process.env.R2_BUCKET_NAME,
+  //     };
 
-      const signedUrl = await handleImage(file, imageData);
-      return { id, signedUrl };
-    });
+  //     const signedUrl = await handleFile(file, imageData);
+  //     return { id, signedUrl };
+  //   });
 
-    Promise.all(promises)
-      .then((images) => {
-        setImages((prevImages) => [...prevImages, ...images]);
-        setUploading(false);
-      })
-      .catch((error) => {
-        console.error("Error:", error.message);
-        setUploading(false);
-      });
-  }
+  //   Promise.all(promises)
+  //     .then((images) => {
+  //       setImages((prevImages) => [...prevImages, ...images]);
+  //       setUploading(false);
+  //     })
+  //     .catch((error) => {
+  //       console.error("Error:", error.message);
+  //       setUploading(false);
+  //     });
+  // }
 
-  const content = () => {
-    switch (true) {
-      case uploading:
-        return <Spinner />;
-      case images.length > 0:
-        return (
-          <div className="container">
-            <div className="image-list">
-              <ImageList images={images} removeImage={removeImage} onError={onImagesError} />
-            </div>
-          </div>
-        );
-      default:
-        return (
-          <div>
-            <UploadButton onChange={onChange} />
-          </div>
-        );
-    }
-  };  
+
+
+
+
+  // const content = () => {
+  //   switch (true) {
+  //     case uploading:
+  //       return <Spinner />;
+  //     case images.length > 0:
+  //       return (
+  //         <div className="container">
+  //           <div className="image-list">
+  //             <ImageList images={images} removeImage={removeImage} onError={onImagesError} />
+  //           </div>
+  //         </div>
+  //       );
+  //     default:
+  //       return (
+  //         <div>
+  //           <UploadButton onChange={onChange} />
+  //         </div>
+  //       );
+  //   }
+  // };  
 
   return (
     <Container>
@@ -246,7 +254,7 @@ const App = () => {
       <FileUpload onFileUpload={handleFileUpload} />
       <FileList files={files} onFileClick={handleFileClick} onFileDelete={handleFileDelete} />
       {selectedFile && <FileDetail file={selectedFile} />}
-      <div className="buttons">{content()}</div>      
+      {/* <div className="buttons">{content()}</div>       */}
     </Container>
   );
 };

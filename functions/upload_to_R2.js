@@ -1,19 +1,9 @@
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { PutObjectCommand } from '@aws-sdk/client-s3'
-import axios from 'axios';
 import { S3Client } from '@aws-sdk/client-s3'
 
 
-// // GET requests to /filename would return "Hello, world!"
-// export const onRequestGet = () => {
-//   return new Response("Hello, world!")
-// }
-
-
-
 export const onRequestPost = async ({ request }) => {
-  // return new Response("Hello, world!")
-  // const { name } = await request.json()
   const { fileName } = request.body;
   console.log("request: ", request);
   console.log("fileName: ", fileName);
