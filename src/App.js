@@ -107,6 +107,9 @@ const App = () => {
       const options = {
         headers: {
           "Content-Type": mimeType || fileOrBlob.type || "application/octet-stream", // Use provided mimeType, or fileOrBlob's type, or default to 'application/octet-stream'
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Methods": "GET,HEAD,POST,PUT,OPTIONS",
+          "Access-Control-Max-Age": "86400",          
         },
       };
       const result = await axios.put(signedUrl, fileOrBlob, options);
