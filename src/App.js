@@ -26,7 +26,7 @@ const App = () => {
         name: file.name,
         size: file.size,
         type: file.type,
-        lastModified: file.last_modified,
+        lastModified: new Date(file.last_modified).toISOString(), // Convert to ISO string
         hash: file.hash,
         extension: file.extension,
         filePath: file.file_path,
@@ -82,7 +82,7 @@ const App = () => {
         const updatedFiles = files.map(f => f.id === file.id ? {
           ...f,
           ...fileDetails,
-          lastModified: fileDetails.last_modified, // Use the fetched value directly
+          lastModified: new Date(fileDetails.last_modified).toISOString(), // Convert to ISO string
         } : f);
         setFiles(updatedFiles);
         setSelectedFileId(file.id);
