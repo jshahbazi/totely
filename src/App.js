@@ -4,7 +4,7 @@ import FileUpload from './components/FileUpload';
 import FileList from './components/FileList';
 import FileDetail from './components/FileDetail';
 import { Container } from './styles';
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 // import UploadButton from "./components/Button";
 // import Spinner from "./components/Spinner";
 // import ImageList from "./components/Images";
