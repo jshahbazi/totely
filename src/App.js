@@ -22,12 +22,13 @@ const App = () => {
 
 
   const handleFileUpload = async (file) => {
+    const generatedUUID = uuidv4();
     const hash = await hashImage(file);
     const extension = getExtensionFromMimeType(file.type);
-    const filePath = `assets/${hash}.${extension}`;
+    const filePath = `${generatedUUID}.${extension}`; //`${hash}.${extension}`;
 
     const newFile = {
-      id: uuidv4(),
+      id: generatedUUID,
       name: file.name,
       size: file.size,
       type: file.type,
