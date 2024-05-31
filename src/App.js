@@ -168,7 +168,9 @@ const App = () => {
   }
 
   async function handleFile(file, fileData) {
-    const { action, filePath } = await addOrRetrieveFile(fileData);
+    // const { action, filePath } = await addOrRetrieveFile(fileData);
+    const action = "add";
+    const filePath = fileData.filePath;
     let signedUrl = null;
 
     if (action === "add") {
