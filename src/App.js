@@ -82,7 +82,7 @@ const App = () => {
         const updatedFiles = files.map(f => f.id === file.id ? {
           ...f,
           ...fileDetails,
-          lastModified: new Date(fileDetails.last_modified).toISOString(), // Ensure date format consistency
+          lastModified: fileDetails.last_modified, // Use the fetched value directly
         } : f);
         setFiles(updatedFiles);
         setSelectedFileId(file.id);
