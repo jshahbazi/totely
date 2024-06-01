@@ -43,45 +43,57 @@ const App = () => {
     const generatedUUID = uuidv4();
     const fileExtension = getExtensionFromMimeType(file.type);
     const newFileName = `${generatedUUID}.${fileExtension}`;
-
+  
     try {
+      // Request a signed URL from the server
       const response = await axios.post('/upload_to_R2', {
         fileName: newFileName,
         fileType: file.type,
-        method: 'POST',
       });
-
+  
       const { signedUrl } = response.data;
-
+  
       if (signedUrl) {
+        // Upload the file to the signed URL
         const uploadResult = await axios.put(signedUrl, file, {
           headers: {
             "Content-Type": file.type,
           },
         });
-
+  
         if (uploadResult.status === 200) {
+          // Calculate the file hash
+          const fileHash = await hashImage(file);
+  
+          // Create a new file object
           const newFile = {
             id: generatedUUID,
             name: file.name,
             size: file.size,
             type: file.type,
-            last_modified: file.last_modified,
-            hash: await hashImage(file),
+            last_modified: file.lastModified, // Ensure to use the correct field for last modified
+            hash: fileHash,
             extension: fileExtension,
             filePath: newFileName,
             bucket: process.env.REACT_APP_R2_BUCKET_NAME,
           };
-
+  
+          // Update the state with the new file
           setFiles([...files, newFile]);
+  
           return { id: newFile.id, signedUrl };
+        } else {
+          throw new Error("Failed to upload the file to R2");
         }
+      } else {
+        throw new Error("Signed URL not received from the server");
       }
     } catch (error) {
       toast.error("Error uploading file: " + error.message, { autoClose: 2000 });
-      console.error(error.message);
+      console.error("File Upload Error:", error.message);
     }
   };
+  
 
   const handleFileClick = async (file) => {
     if (selectedFile?.id === file.id) {
