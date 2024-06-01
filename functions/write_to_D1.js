@@ -11,7 +11,7 @@ export const onRequestPost = async ({ request, env, ctx }) => {
         dataToSave.name,
         dataToSave.size,
         dataToSave.type,
-        dataToSave.lastModified,
+        dataToSave.last_modified,
         dataToSave.hash,
         dataToSave.extension,
         dataToSave.filePath,
@@ -21,7 +21,7 @@ export const onRequestPost = async ({ request, env, ctx }) => {
 
     let response = null;
     if (result.meta.changes !== 1) {
-      response = new Response(`Failed to insert image ${dataToSave.hash} into the database`, { status: 500 });
+      response = new Response(`Failed to insert file ${dataToSave.hash} into the database`, { status: 500 });
     } else {
       let responseMessage = { action: "add", filePath: dataToSave.filePath };
       response = new Response(JSON.stringify(responseMessage), { status: 200 });

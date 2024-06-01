@@ -17,6 +17,17 @@ const App = () => {
     fetchFilesFromD1();
   }, []);
 
+  async function addOrRetrieveFile(dataToSave) {
+    const options = {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    };
+    const result = await axios.post("/write_to_D1", dataToSave, options);
+    return result.data;
+  }
+
+
   const fetchFilesFromD1 = async () => {
     try {
       const response = await axios.get("/get_files_from_D1");
@@ -38,6 +49,7 @@ const App = () => {
       console.error(error.message);
     }
   };
+
 
   const handleFileUpload = async (file) => {
     const generatedUUID = uuidv4();
@@ -77,10 +89,25 @@ const App = () => {
             bucket: process.env.REACT_APP_R2_BUCKET_NAME,
           };
   
-          setFiles([...files, newFile]);
-          console.log("File added to state:", newFile); // Logging
+          console.log("Writing file info to D1 database..."); // Logging
+          const dbResponse = await axios.post('/write_to_D1', newFile);
   
-          return { id: newFile.id, signedUrl };
+          if (dbResponse.status === 200) {
+            const { action, filePath } = dbResponse.data;
+  
+            if (action === "add") {
+              console.log("File info successfully added to database."); // Logging
+              setFiles([...files, newFile]);
+              return { id: newFile.id, signedUrl };
+            } else if (action === "retrieve") {
+              console.log("File already exists in the database, retrieving path..."); // Logging
+              const existingFile = { ...newFile, filePath };
+              setFiles([...files, existingFile]);
+              return { id: existingFile.id, signedUrl };
+            }
+          } else {
+            throw new Error("Failed to write file info to the database");
+          }
         } else {
           throw new Error("Failed to upload the file to R2");
         }
@@ -92,6 +119,7 @@ const App = () => {
       console.error("File Upload Error:", error); // Enhanced logging
     }
   };
+  
   
   
 
