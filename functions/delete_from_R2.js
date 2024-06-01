@@ -2,7 +2,7 @@ import { S3Client, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 export const onRequestPost = async ({ request }) => {
-  if (request.method === 'POST') {
+  if (request.method === 'DELETE') {
     try {
       const { fileName } = await request.json();
 
