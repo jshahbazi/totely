@@ -2,7 +2,7 @@ import { S3Client, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 export const onRequestPost = async ({ request, env }) => {
-  try {
+//   try {
     console.log('Request received:', request);
     const { method, fileName } = await request.json();
 
@@ -29,10 +29,10 @@ export const onRequestPost = async ({ request, env }) => {
     return new Response(JSON.stringify({ message: 'File deleted successfully' }), {
       headers: { 'Content-Type': 'application/json' },
     });
-  } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
-      headers: { 'Content-Type': 'application/json' },
-      status: 500,
-    });
-  }
+//   } catch (error) {
+//     return new Response(JSON.stringify({ error: error.message }), {
+//       headers: { 'Content-Type': 'application/json' },
+//       status: 500,
+//     });
+//   }
 };
