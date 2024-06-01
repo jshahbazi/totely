@@ -8,10 +8,22 @@ import { toast } from "react-toastify";
 import axios from "axios";
 // import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 // import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import Replicate from 'replicate';
 
-const App = () => {
+const replicate = new Replicate({
+  auth: process.env.REPLICATE_API_TOKEN,
+});
+
+const App = async () => {
   const [files, setFiles] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
+
+  const input = {
+    input: "https://replicate.delivery/pbxt/IqLXryIoF3aK3loaAUERG2lxnZX8x0yTZ9Nas9JtMxqcgotD/astronaut.png"
+  };
+
+  const output = await replicate.run("daanelson/imagebind:0383f62e173dc821ec52663ed22a076d9c970549c209666ac3db181618b7a304", { input });
+  console.log(output)
 
   useEffect(() => {
     fetchFilesFromD1();
