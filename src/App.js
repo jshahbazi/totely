@@ -106,19 +106,28 @@ const App = () => {
   const handleFileDelete = async (id) => {
     const fileToDelete = files.find((file) => file.id === id);
     if (!fileToDelete) return;
-
+  
     try {
-      await deleteFileFromBucket(fileToDelete.filePath, fileToDelete.bucket);
-      setFiles(files.filter((file) => file.id !== id));
-      if (selectedFile?.id === id) {
-        setSelectedFile(null);
+      const response = await axios.post('/delete_from_R2', {
+        method: 'DELETE',
+        fileName: fileToDelete.filePath
+      });
+  
+      if (response.status === 200) {
+        setFiles(files.filter((file) => file.id !== id));
+        if (selectedFile?.id === id) {
+          setSelectedFile(null);
+        }
+        toast.info("File deleted successfully", { autoClose: 2000 });
+      } else {
+        throw new Error(response.data.error || 'Error deleting file');
       }
-      toast.info("File deleted successfully", { autoClose: 2000 });
     } catch (error) {
       toast.error("Error deleting file: " + error.message, { autoClose: 2000 });
       console.error(error.message);
     }
   };
+  
 
   const handleFileDownload = async (file) => {
     try {
@@ -204,19 +213,6 @@ const App = () => {
     }
   }
 
-  // async function uploadFile(fileOrBlob, signedUrl, mimeType) {
-  //   try {
-  //     const options = {
-  //       headers: {
-  //         "Content-Type": mimeType || fileOrBlob.type || "application/octet-stream",
-  //       },
-  //     };
-  //     const result = await axios.put(signedUrl, fileOrBlob, options);
-  //     return result.status;
-  //   } catch (error) {
-  //     console.error("Error:", error.message);
-  //   }
-  // }
 
   async function hashImage(file) {
     const arrayBuffer = await file.arrayBuffer();
@@ -245,13 +241,6 @@ const App = () => {
     return mimeToExtension[mimeType] || null;
   }
 
-  // async function uploadFileWrapper(file, bucket, filePath, mimeType) {
-  //   let signedUrl = await getSignedUrlForFile(filePath, bucket, "putObject");
-  //   let uploadStatus = await uploadFile(file, signedUrl, mimeType);
-  //   console.log("uploadStatus: ", uploadStatus);
-  //   signedUrl = await getSignedUrlForFile(filePath, bucket, "getObject");
-  //   return signedUrl;
-  // }
 
   async function deleteFileFromBucket(filePath, bucket) {
     let signedUrl = await getSignedUrlForFile(filePath, bucket, "deleteObject");
@@ -263,34 +252,6 @@ const App = () => {
       throw new Error("Failed to delete file from bucket");
     }
   }
-
-  // async function addOrRetrieveFile(dataToSave) {
-  //   const options = {
-  //     headers: {
-  //       "Content-Type": "application/json",
-  //     },
-  //   };
-  //   const result = await axios.post("/write_to_D1", dataToSave, options);
-  //   return result.data;
-  // }
-
-  // async function handleFile(file, fileData) {
-  //   const { action, filePath } = await addOrRetrieveFile(fileData);
-  //   console.log("fileData: ", fileData);
-  //   let signedUrl = null;
-
-  //   if (action === "add") {
-  //     toast.info("Uploading file...", { autoClose: 2000 });
-  //     console.log("Uploading file...");
-  //     signedUrl = await uploadFileWrapper(file, fileData.bucket, filePath, file.type);
-  //   } else if (action === "retrieve") {
-  //     toast.info("File already exists. Retrieving...", { autoClose: 2000 });
-  //     console.log("File already exists. Retrieving...");
-  //     signedUrl = await getSignedUrlForFile(filePath, fileData.bucket, "getObject");
-  //   }
-  //   console.log("signedUrl: ", signedUrl);
-  //   return signedUrl;
-  // }
 
   return (
     <Container>
