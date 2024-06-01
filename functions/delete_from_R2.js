@@ -3,6 +3,7 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 export const onRequestPost = async ({ request, env }) => {
   try {
+    console.log('Request received:', request);
     const { method, fileName } = await request.json();
 
     if (method !== 'DELETE') {
