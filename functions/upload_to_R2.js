@@ -16,6 +16,7 @@ export const onRequestPost = async ({ request }) => {
         throw new Error("Missing required environment variables");
       }
 
+      console.log("Creating S3 client..."); // Logging
       const r2 = new S3Client({
         region: "auto",
         endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
@@ -25,19 +26,22 @@ export const onRequestPost = async ({ request }) => {
         },
       });
 
+      console.log("Generating put object command..."); // Logging
       const putObjectCommand = new PutObjectCommand({
         Bucket: bucketName,
         Key: fileName,
         ContentType: fileType,
       });
 
+      console.log("Requesting signed URL..."); // Logging
       const signedUrl = await getSignedUrl(r2, putObjectCommand, { expiresIn: 60 });
 
+      console.log("Signed URL generated:", signedUrl); // Logging
       return new Response(JSON.stringify({ signedUrl }), {
         headers: { 'Content-Type': 'application/json' },
       });
     } catch (error) {
-      console.error("Error generating signed URL:", error); // Add detailed logging
+      console.error("Error generating signed URL:", error); // Detailed logging
       return new Response(JSON.stringify({ error: error.message }), {
         headers: { 'Content-Type': 'application/json' },
         status: 500,
