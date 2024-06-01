@@ -1,7 +1,7 @@
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
-export const onRequestPost = async ({ request }) => {
+export const onRequestPost = async ({ request, env }) => { // Ensure env is included in the arguments
   if (request.method === 'POST') {
     try {
       const { fileName, fileType } = await request.json();
