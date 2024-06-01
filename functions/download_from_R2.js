@@ -1,7 +1,7 @@
 import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
-export const onRequestGet = async ({ request }) => {
+export const onRequestGet = async ({ request, env }) => {
   const { searchParams } = new URL(request.url);
   const fileName = searchParams.get('fileName');
 
@@ -12,15 +12,15 @@ export const onRequestGet = async ({ request }) => {
   try {
     const r2 = new S3Client({
       region: "auto",
-      endpoint: `https://${process.env.REACT_APP_R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+      endpoint: `https://${env.REACT_APP_R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
       credentials: {
-        accessKeyId: process.env.REACT_APP_R2_ACCESS_KEY_ID,
-        secretAccessKey: process.env.REACT_APP_R2_SECRET_ACCESS_KEY,
+        accessKeyId: env.REACT_APP_R2_ACCESS_KEY_ID,
+        secretAccessKey: env.REACT_APP_R2_SECRET_ACCESS_KEY,
       },
     });
 
     const getObjectCommand = new GetObjectCommand({
-      Bucket: process.env.REACT_APP_R2_BUCKET_NAME,
+      Bucket: env.REACT_APP_R2_BUCKET_NAME,
       Key: fileName,
     });
 

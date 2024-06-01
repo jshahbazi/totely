@@ -8,15 +8,15 @@ export const onRequestPost = async ({ request }) => {
 
         const r2 = new S3Client({
           region: "auto",
-          endpoint: `https://${process.env.REACT_APP_R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+          endpoint: `https://${env.REACT_APP_R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
           credentials: {
-            accessKeyId: process.env.REACT_APP_R2_ACCESS_KEY_ID,
-            secretAccessKey: process.env.REACT_APP_R2_SECRET_ACCESS_KEY,
+            accessKeyId: env.REACT_APP_R2_ACCESS_KEY_ID,
+            secretAccessKey: env.REACT_APP_R2_SECRET_ACCESS_KEY,
           },
         });
 
         const putObjectCommand = new PutObjectCommand({
-          Bucket: process.env.REACT_APP_R2_BUCKET_NAME,
+          Bucket: env.REACT_APP_R2_BUCKET_NAME,
           Key: fileName,
           ContentType: fileType,
         });
