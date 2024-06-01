@@ -108,6 +108,7 @@ const App = () => {
     if (!fileToDelete) return;
   
     try {
+      console.log('Deleting file:', fileToDelete);  // Debugging
       const response = await axios.post('/delete_from_R2', {
         method: 'DELETE',
         fileName: fileToDelete.filePath
@@ -162,57 +163,6 @@ const App = () => {
       console.error("Download Error:", error);
     }
   };
-  
-  
-
-  // async function getSignedUrlForFile(key, bucket, action = "putObject") {
-  //   try {
-  //     const r2 = new S3Client({
-  //       region: "auto",
-  //       endpoint: `https://${process.env.REACT_APP_R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
-  //       credentials: {
-  //         accessKeyId: process.env.REACT_APP_R2_ACCESS_KEY_ID,
-  //         secretAccessKey: process.env.REACT_APP_R2_SECRET_ACCESS_KEY,
-  //       },
-  //     });
-
-  //     let signedUrl = "";
-  //     if (action === "putObject") {
-  //       signedUrl = await getSignedUrl(
-  //         r2,
-  //         new PutObjectCommand({
-  //           Bucket: bucket,
-  //           Key: key,
-  //         }),
-  //         { expiresIn: 60 }
-  //       );
-  //     } else if (action === "getObject") {
-  //       signedUrl = await getSignedUrl(
-  //         r2,
-  //         new GetObjectCommand({
-  //           Bucket: bucket,
-  //           Key: key,
-  //         }),
-  //         { expiresIn: 60 }
-  //       );
-  //     } else if (action === "deleteObject") {
-  //       signedUrl = await getSignedUrl(
-  //         r2,
-  //         new DeleteObjectCommand({
-  //           Bucket: bucket,
-  //           Key: key,
-  //         }),
-  //         { expiresIn: 60 }
-  //       );
-  //     }
-
-  //     return signedUrl;
-  //   } catch (error) {
-  //     console.error("Error:", error.message);
-  //     return error;
-  //   }
-  // }
-
 
   async function hashImage(file) {
     const arrayBuffer = await file.arrayBuffer();
@@ -240,18 +190,6 @@ const App = () => {
 
     return mimeToExtension[mimeType] || null;
   }
-
-
-  // async function deleteFileFromBucket(filePath, bucket) {
-  //   let signedUrl = await getSignedUrlForFile(filePath, bucket, "deleteObject");
-  //   try {
-  //     const result = await axios.delete(signedUrl);
-  //     return result.status;
-  //   } catch (error) {
-  //     console.error("Error:", error.message);
-  //     throw new Error("Failed to delete file from bucket");
-  //   }
-  // }
 
   return (
     <Container>
