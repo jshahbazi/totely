@@ -123,15 +123,25 @@ const App = () => {
   const handleFileDownload = async (file) => {
     try {
       const response = await axios.get(`/download_file_from_bucket?fileName=${file.filePath}`);
+      if (!response.data || !response.data.signedUrl) {
+        throw new Error("Signed URL not received");
+      }
       const { signedUrl } = response.data;
+      console.log('Signed URL:', signedUrl);  // Debugging
   
       // Fetch the file using the signed URL
       const fileResponse = await axios.get(signedUrl, {
         responseType: 'blob', // Ensure we get the file as a blob
       });
+      console.log('File Response:', fileResponse);  // Debugging
+  
+      if (!fileResponse.data) {
+        throw new Error("Failed to fetch file data");
+      }
   
       // Create a URL for the file blob and trigger the download
       const fileURL = window.URL.createObjectURL(new Blob([fileResponse.data]));
+      console.log('File URL:', fileURL);  // Debugging
       const link = document.createElement('a');
       link.href = fileURL;
       link.setAttribute('download', file.name); // Set the file name for download
@@ -140,9 +150,10 @@ const App = () => {
       document.body.removeChild(link);
     } catch (error) {
       toast.error("Error downloading file: " + error.message, { autoClose: 2000 });
-      console.error(error.message);
+      console.error("Download Error:", error);
     }
   };
+  
   
 
   async function getSignedUrlForFile(key, bucket, action = "putObject") {
