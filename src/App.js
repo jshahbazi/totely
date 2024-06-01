@@ -6,6 +6,8 @@ import FileDetail from './components/FileDetail';
 import { Container } from './styles';
 import { toast } from "react-toastify";
 import axios from "axios";
+import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 const App = () => {
   const [files, setFiles] = useState([]);
@@ -106,9 +108,7 @@ const App = () => {
     if (!fileToDelete) return;
 
     try {
-      await axios.post('/delete_from_R2', {
-        filePath: fileToDelete.filePath,
-      });
+      await deleteFileFromBucket(fileToDelete.filePath, fileToDelete.bucket);
       setFiles(files.filter((file) => file.id !== id));
       if (selectedFile?.id === id) {
         setSelectedFile(null);
@@ -124,12 +124,81 @@ const App = () => {
     try {
       const response = await axios.get(`/download_file_from_bucket?fileName=${file.filePath}`);
       const { signedUrl } = response.data;
-      window.open(signedUrl, '_blank');
+
+      // Trigger the download using an anchor element
+      const link = document.createElement('a');
+      link.href = signedUrl;
+      link.download = file.name; // This sets the name for the downloaded file
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     } catch (error) {
       toast.error("Error downloading file: " + error.message, { autoClose: 2000 });
       console.error(error.message);
     }
   };
+
+  async function getSignedUrlForFile(key, bucket, action = "putObject") {
+    try {
+      const r2 = new S3Client({
+        region: "auto",
+        endpoint: `https://${process.env.REACT_APP_R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+        credentials: {
+          accessKeyId: process.env.REACT_APP_R2_ACCESS_KEY_ID,
+          secretAccessKey: process.env.REACT_APP_R2_SECRET_ACCESS_KEY,
+        },
+      });
+
+      let signedUrl = "";
+      if (action === "putObject") {
+        signedUrl = await getSignedUrl(
+          r2,
+          new PutObjectCommand({
+            Bucket: bucket,
+            Key: key,
+          }),
+          { expiresIn: 60 }
+        );
+      } else if (action === "getObject") {
+        signedUrl = await getSignedUrl(
+          r2,
+          new GetObjectCommand({
+            Bucket: bucket,
+            Key: key,
+          }),
+          { expiresIn: 60 }
+        );
+      } else if (action === "deleteObject") {
+        signedUrl = await getSignedUrl(
+          r2,
+          new DeleteObjectCommand({
+            Bucket: bucket,
+            Key: key,
+          }),
+          { expiresIn: 60 }
+        );
+      }
+
+      return signedUrl;
+    } catch (error) {
+      console.error("Error:", error.message);
+      return error;
+    }
+  }
+
+  // async function uploadFile(fileOrBlob, signedUrl, mimeType) {
+  //   try {
+  //     const options = {
+  //       headers: {
+  //         "Content-Type": mimeType || fileOrBlob.type || "application/octet-stream",
+  //       },
+  //     };
+  //     const result = await axios.put(signedUrl, fileOrBlob, options);
+  //     return result.status;
+  //   } catch (error) {
+  //     console.error("Error:", error.message);
+  //   }
+  // }
 
   async function hashImage(file) {
     const arrayBuffer = await file.arrayBuffer();
@@ -157,6 +226,53 @@ const App = () => {
 
     return mimeToExtension[mimeType] || null;
   }
+
+  // async function uploadFileWrapper(file, bucket, filePath, mimeType) {
+  //   let signedUrl = await getSignedUrlForFile(filePath, bucket, "putObject");
+  //   let uploadStatus = await uploadFile(file, signedUrl, mimeType);
+  //   console.log("uploadStatus: ", uploadStatus);
+  //   signedUrl = await getSignedUrlForFile(filePath, bucket, "getObject");
+  //   return signedUrl;
+  // }
+
+  async function deleteFileFromBucket(filePath, bucket) {
+    let signedUrl = await getSignedUrlForFile(filePath, bucket, "deleteObject");
+    try {
+      const result = await axios.delete(signedUrl);
+      return result.status;
+    } catch (error) {
+      console.error("Error:", error.message);
+      throw new Error("Failed to delete file from bucket");
+    }
+  }
+
+  // async function addOrRetrieveFile(dataToSave) {
+  //   const options = {
+  //     headers: {
+  //       "Content-Type": "application/json",
+  //     },
+  //   };
+  //   const result = await axios.post("/write_to_D1", dataToSave, options);
+  //   return result.data;
+  // }
+
+  // async function handleFile(file, fileData) {
+  //   const { action, filePath } = await addOrRetrieveFile(fileData);
+  //   console.log("fileData: ", fileData);
+  //   let signedUrl = null;
+
+  //   if (action === "add") {
+  //     toast.info("Uploading file...", { autoClose: 2000 });
+  //     console.log("Uploading file...");
+  //     signedUrl = await uploadFileWrapper(file, fileData.bucket, filePath, file.type);
+  //   } else if (action === "retrieve") {
+  //     toast.info("File already exists. Retrieving...", { autoClose: 2000 });
+  //     console.log("File already exists. Retrieving...");
+  //     signedUrl = await getSignedUrlForFile(filePath, fileData.bucket, "getObject");
+  //   }
+  //   console.log("signedUrl: ", signedUrl);
+  //   return signedUrl;
+  // }
 
   return (
     <Container>

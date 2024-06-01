@@ -24,7 +24,12 @@ export const onRequestGet = async ({ request }) => {
       Key: fileName,
     });
 
-    const signedUrl = await getSignedUrl(r2, getObjectCommand, { expiresIn: 60 });
+    const signedUrl = await getSignedUrl(r2, getObjectCommand, { 
+      expiresIn: 60,
+      headers: {
+        'Content-Disposition': `attachment; filename="${fileName}"` // Ensure the correct filename is suggested
+      }
+    });
 
     return new Response(JSON.stringify({ signedUrl }), {
       headers: { 'Content-Type': 'application/json' },
