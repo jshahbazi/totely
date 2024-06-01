@@ -135,7 +135,10 @@ const App = () => {
 
   const handleFileDelete = async (id) => {
     const fileToDelete = files.find((file) => file.id === id);
-    if (!fileToDelete) return;
+    if (!fileToDelete) {
+      console.error("File not found for deletion:", id); // Debug logging
+      return;
+    }
   
     try {
       console.log('Deleting file from R2:', fileToDelete);  // Debugging
@@ -165,6 +168,7 @@ const App = () => {
       console.error("File Deletion Error:", error);
     }
   };
+  
   
   
 
