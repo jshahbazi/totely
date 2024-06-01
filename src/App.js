@@ -6,16 +6,10 @@ import FileDetail from './components/FileDetail';
 import { Container } from './styles';
 import { toast } from "react-toastify";
 import axios from "axios";
-// import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
-// import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
-
-const App = async () => {
+const App = () => {
   const [files, setFiles] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
-
-  const response = await axios.post('/vectorize_file', { 'test': 'test'});
-  console.log(response.data);
 
   useEffect(() => {
     fetchFilesFromD1();
@@ -43,57 +37,51 @@ const App = async () => {
     }
   };
 
-
   const handleFileUpload = async (file) => {
     const generatedUUID = uuidv4();
     const fileExtension = getExtensionFromMimeType(file.type);
     const newFileName = `${generatedUUID}.${fileExtension}`;
-  
+
     try {
-      console.log("Requesting signed URL from the server..."); // Logging
       const response = await axios.post('/upload_to_R2', {
         fileName: newFileName,
         fileType: file.type,
       });
-  
+
       const { signedUrl } = response.data;
-  
+
       if (signedUrl) {
-        console.log("Signed URL received, uploading file..."); // Logging
         const uploadResult = await axios.put(signedUrl, file, {
           headers: {
             "Content-Type": file.type,
           },
         });
-  
+
         if (uploadResult.status === 200) {
-          console.log("File uploaded successfully, calculating hash..."); // Logging
           const fileHash = await hashImage(file);
-  
+
           const newFile = {
             id: generatedUUID,
             name: file.name,
             size: file.size,
             type: file.type,
-            last_modified: file.lastModified, // Ensure correct field
+            last_modified: file.lastModified, 
             hash: fileHash,
             extension: fileExtension,
             filePath: newFileName,
             bucket: process.env.REACT_APP_R2_BUCKET_NAME,
           };
-  
-          console.log("Writing file info to D1 database..."); // Logging
+
           const dbResponse = await axios.post('/write_to_D1', newFile);
-  
+
           if (dbResponse.status === 200) {
             const { action, filePath } = dbResponse.data;
-  
+
             if (action === "add") {
-              console.log("File info successfully added to database."); // Logging
               setFiles([...files, newFile]);
+              await vectorizeFile(newFile); // Vectorize the file
               return { id: newFile.id, signedUrl };
             } else if (action === "retrieve") {
-              console.log("File already exists in the database, retrieving path..."); // Logging
               const existingFile = { ...newFile, filePath };
               setFiles([...files, existingFile]);
               return { id: existingFile.id, signedUrl };
@@ -109,12 +97,20 @@ const App = async () => {
       }
     } catch (error) {
       toast.error("Error uploading file: " + error.message, { autoClose: 2000 });
-      console.error("File Upload Error:", error); // Enhanced logging
+      console.error("File Upload Error:", error);
     }
   };
-  
-  
-  
+
+  const vectorizeFile = async (file) => {
+    try {
+      const response = await axios.post('/vectorize_file', { filePath: file.filePath, bucket: file.bucket });
+      const { vector } = response.data;
+      console.log('File vector:', vector); // Print the vector in the console
+    } catch (error) {
+      toast.error("Error vectorizing file: " + error.message, { autoClose: 2000 });
+      console.error("Vectorization Error:", error);
+    }
+  };
 
   const handleFileClick = async (file) => {
     if (selectedFile?.id === file.id) {
@@ -140,21 +136,19 @@ const App = async () => {
   const handleFileDelete = async (id) => {
     const fileToDelete = files.find((file) => file.id === id);
     if (!fileToDelete) {
-      console.error("File not found for deletion:", id); // Debug logging
+      console.error("File not found for deletion:", id); 
       return;
     }
-  
+
     try {
-      console.log('Deleting file from R2:', fileToDelete);  // Debugging
       const response = await axios.post('/delete_from_R2', {
         method: 'DELETE',
         fileName: fileToDelete.filePath
       });
-  
+
       if (response.status === 200) {
-        console.log('Deleting file from D1 database...');  // Debugging
         const dbResponse = await axios.post('/delete_from_D1', { id });
-  
+
         if (dbResponse.status === 200) {
           setFiles(files.filter((file) => file.id !== id));
           if (selectedFile?.id === id) {
@@ -172,10 +166,6 @@ const App = async () => {
       console.error("File Deletion Error:", error);
     }
   };
-  
-  
-  
-  
 
   const handleFileDownload = async (file) => {
     try {
@@ -184,24 +174,19 @@ const App = async () => {
         throw new Error("Signed URL not received");
       }
       const { signedUrl } = response.data;
-      console.log('Signed URL:', signedUrl);  // Debugging
-  
-      // Fetch the file using the signed URL
+
       const fileResponse = await axios.get(signedUrl, {
-        responseType: 'blob', // Ensure we get the file as a blob
+        responseType: 'blob',
       });
-      console.log('File Response:', fileResponse);  // Debugging
-  
+
       if (!fileResponse.data) {
         throw new Error("Failed to fetch file data");
       }
-  
-      // Create a URL for the file blob and trigger the download
+
       const fileURL = window.URL.createObjectURL(new Blob([fileResponse.data]));
-      console.log('File URL:', fileURL);  // Debugging
       const link = document.createElement('a');
       link.href = fileURL;
-      link.setAttribute('download', file.name); // Set the file name for download
+      link.setAttribute('download', file.name);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
