@@ -48,6 +48,7 @@ const App = () => {
       const response = await axios.post('/upload_to_R2', {
         fileName: newFileName,
         fileType: file.type,
+        method: 'POST',
       });
 
       const { signedUrl } = response.data;

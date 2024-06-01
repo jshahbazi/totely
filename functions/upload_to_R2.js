@@ -4,7 +4,11 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 export const onRequestPost = async ({ request }) => {
     if (request.method === 'POST') {
       try {
-        const { fileName, fileType } = await request.json();
+        const { fileName, fileType, method } = await request.json();
+
+        if (method !== 'POST') {
+          return new Response('Method Not Allowed', { status: 405 });
+        }
 
         const r2 = new S3Client({
           region: "auto",
