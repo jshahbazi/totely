@@ -5,10 +5,7 @@ import FileList from './components/FileList';
 import FileDetail from './components/FileDetail';
 import { Container } from './styles';
 import { toast } from "react-toastify";
-
 import axios from "axios";
-import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 const App = () => {
   const [files, setFiles] = useState([]);
@@ -26,7 +23,7 @@ const App = () => {
         name: file.name,
         size: file.size,
         type: file.type,
-        last_modified: new Date(Number(file.last_modified)).toISOString(), // Convert to ISO string
+        last_modified: new Date(Number(file.last_modified)).toISOString(),
         hash: file.hash,
         extension: file.extension,
         filePath: file.file_path,
@@ -41,40 +38,51 @@ const App = () => {
   };
 
   const handleFileUpload = async (file) => {
-    const bucket = process.env.REACT_APP_R2_BUCKET_NAME;
     const generatedUUID = uuidv4();
-    const hash = await hashImage(file);
     const fileExtension = getExtensionFromMimeType(file.type);
     const newFileName = `${generatedUUID}.${fileExtension}`;
-    const proposedFilePath = `${newFileName}`;
 
-    const newFile = {
-      id: generatedUUID,
-      name: file.name,
-      size: file.size,
-      type: file.type,
-      last_modified: file.last_modified,
-      hash: hash,
-      extension: fileExtension,
-      filePath: proposedFilePath,
-      bucket: bucket,
-    };
-    setFiles([...files, newFile]);
-
-    let signedUrl = null;
     try {
-      signedUrl = await handleFile(file, newFile);
+      const response = await axios.post('/upload_to_R2', {
+        fileName: newFileName,
+        fileType: file.type,
+      });
+
+      const { signedUrl } = response.data;
+
+      if (signedUrl) {
+        const uploadResult = await axios.put(signedUrl, file, {
+          headers: {
+            "Content-Type": file.type,
+          },
+        });
+
+        if (uploadResult.status === 200) {
+          const newFile = {
+            id: generatedUUID,
+            name: file.name,
+            size: file.size,
+            type: file.type,
+            last_modified: file.last_modified,
+            hash: await hashImage(file),
+            extension: fileExtension,
+            filePath: newFileName,
+            bucket: process.env.REACT_APP_R2_BUCKET_NAME,
+          };
+
+          setFiles([...files, newFile]);
+          return { id: newFile.id, signedUrl };
+        }
+      }
     } catch (error) {
-      toast.info("Error: " + error.message, { autoClose: 2000 });
+      toast.error("Error uploading file: " + error.message, { autoClose: 2000 });
       console.error(error.message);
-      return;
     }
-    return { id: newFile.id, signedUrl };
   };
 
   const handleFileClick = async (file) => {
     if (selectedFile?.id === file.id) {
-      setSelectedFile(null); // Deselect if already selected
+      setSelectedFile(null);
     } else {
       try {
         const response = await axios.get(`/get_file_details/${file.id}`);
@@ -98,7 +106,9 @@ const App = () => {
     if (!fileToDelete) return;
 
     try {
-      await deleteFileFromBucket(fileToDelete.filePath, fileToDelete.bucket);
+      await axios.post('/delete_from_R2', {
+        filePath: fileToDelete.filePath,
+      });
       setFiles(files.filter((file) => file.id !== id));
       if (selectedFile?.id === id) {
         setSelectedFile(null);
@@ -110,67 +120,16 @@ const App = () => {
     }
   };
 
-  async function getSignedUrlForFile(key, bucket, action = "putObject") {
+  const handleFileDownload = async (file) => {
     try {
-      const r2 = new S3Client({
-        region: "auto",
-        endpoint: `https://${process.env.REACT_APP_R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
-        credentials: {
-          accessKeyId: process.env.REACT_APP_R2_ACCESS_KEY_ID,
-          secretAccessKey: process.env.REACT_APP_R2_SECRET_ACCESS_KEY,
-        },
-      });
-
-      let signedUrl = "";
-      if (action === "putObject") {
-        signedUrl = await getSignedUrl(
-          r2,
-          new PutObjectCommand({
-            Bucket: bucket,
-            Key: key,
-          }),
-          { expiresIn: 60 }
-        );
-      } else if (action === "getObject") {
-        signedUrl = await getSignedUrl(
-          r2,
-          new GetObjectCommand({
-            Bucket: bucket,
-            Key: key,
-          }),
-          { expiresIn: 60 }
-        );
-      } else if (action === "deleteObject") {
-        signedUrl = await getSignedUrl(
-          r2,
-          new DeleteObjectCommand({
-            Bucket: bucket,
-            Key: key,
-          }),
-          { expiresIn: 60 }
-        );
-      }
-
-      return signedUrl;
+      const response = await axios.get(`/download_file_from_bucket?fileName=${file.filePath}`);
+      const { signedUrl } = response.data;
+      window.open(signedUrl, '_blank');
     } catch (error) {
-      console.error("Error:", error.message);
-      return error;
+      toast.error("Error downloading file: " + error.message, { autoClose: 2000 });
+      console.error(error.message);
     }
-  }
-
-  async function uploadFile(fileOrBlob, signedUrl, mimeType) {
-    try {
-      const options = {
-        headers: {
-          "Content-Type": mimeType || fileOrBlob.type || "application/octet-stream",
-        },
-      };
-      const result = await axios.put(signedUrl, fileOrBlob, options);
-      return result.status;
-    } catch (error) {
-      console.error("Error:", error.message);
-    }
-  }
+  };
 
   async function hashImage(file) {
     const arrayBuffer = await file.arrayBuffer();
@@ -199,58 +158,11 @@ const App = () => {
     return mimeToExtension[mimeType] || null;
   }
 
-  async function uploadFileWrapper(file, bucket, filePath, mimeType) {
-    let signedUrl = await getSignedUrlForFile(filePath, bucket, "putObject");
-    let uploadStatus = await uploadFile(file, signedUrl, mimeType);
-    console.log("uploadStatus: ", uploadStatus);
-    signedUrl = await getSignedUrlForFile(filePath, bucket, "getObject");
-    return signedUrl;
-  }
-
-  async function deleteFileFromBucket(filePath, bucket) {
-    let signedUrl = await getSignedUrlForFile(filePath, bucket, "deleteObject");
-    try {
-      const result = await axios.delete(signedUrl);
-      return result.status;
-    } catch (error) {
-      console.error("Error:", error.message);
-      throw new Error("Failed to delete file from bucket");
-    }
-  }
-
-  async function addOrRetrieveFile(dataToSave) {
-    const options = {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    };
-    const result = await axios.post("/write_to_D1", dataToSave, options);
-    return result.data;
-  }
-
-  async function handleFile(file, fileData) {
-    const { action, filePath } = await addOrRetrieveFile(fileData);
-    console.log("fileData: ", fileData);
-    let signedUrl = null;
-
-    if (action === "add") {
-      toast.info("Uploading file...", { autoClose: 2000 });
-      console.log("Uploading file...");
-      signedUrl = await uploadFileWrapper(file, fileData.bucket, filePath, file.type);
-    } else if (action === "retrieve") {
-      toast.info("File already exists. Retrieving...", { autoClose: 2000 });
-      console.log("File already exists. Retrieving...");
-      signedUrl = await getSignedUrlForFile(filePath, fileData.bucket, "getObject");
-    }
-    console.log("signedUrl: ", signedUrl);
-    return signedUrl;
-  }
-
   return (
     <Container>
       <h1>Digital Asset Manager</h1>
       <FileUpload onFileUpload={handleFileUpload} />
-      <FileList files={files} onFileClick={handleFileClick} onFileDelete={handleFileDelete} />
+      <FileList files={files} onFileClick={handleFileClick} onFileDelete={handleFileDelete} onFileDownload={handleFileDownload} />
       {selectedFile && <FileDetail file={selectedFile} />}
     </Container>
   );

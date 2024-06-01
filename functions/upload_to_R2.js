@@ -1,38 +1,38 @@
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
-import { PutObjectCommand } from '@aws-sdk/client-s3'
-import { S3Client } from '@aws-sdk/client-s3'
-
+import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 export const onRequestPost = async ({ request }) => {
-  const { fileName } = request.body;
-  console.log("request: ", request);
-  console.log("fileName: ", fileName);
+    if (request.method === 'POST') {
+      try {
+        const { fileName, fileType } = await request.json();
 
-  const r2 = new S3Client({
-    region: 'auto',
-    endpoint: `https://${process.env.REACT_APP_R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
-    credentials: {
-      accessKeyId: process.env.REACT_APP_R2_ACCESS_KEY_ID || '',
-      secretAccessKey: process.env.REACT_APP_R2_SECRET_ACCESS_KEY || '',
-    },
-  })  
+        const r2 = new S3Client({
+          region: "auto",
+          endpoint: `https://${process.env.REACT_APP_R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+          credentials: {
+            accessKeyId: process.env.REACT_APP_R2_ACCESS_KEY_ID,
+            secretAccessKey: process.env.REACT_APP_R2_SECRET_ACCESS_KEY,
+          },
+        });
 
-  try {
-    const signedUrl = await getSignedUrl(
-      r2,
-      new PutObjectCommand({
-        Bucket: process.env.REACT_APP_R2_BUCKET_NAME,
-        Key: fileName,
-      }),
-      { expiresIn: 60 }
-    );
-    console.log(`Success generating upload URL!`);
+        const putObjectCommand = new PutObjectCommand({
+          Bucket: process.env.REACT_APP_R2_BUCKET_NAME,
+          Key: fileName,
+          ContentType: fileType,
+        });
 
-    return new Response(JSON.stringify({ signedUrl }));
+        const signedUrl = await getSignedUrl(r2, putObjectCommand, { expiresIn: 60 });
 
-  } catch (error) {
-    console.error(error);
-    return new Response(error.message, { status: 500 });
-  }
-
-}
+        return new Response(JSON.stringify({ signedUrl }), {
+          headers: { 'Content-Type': 'application/json' },
+        });
+      } catch (error) {
+        return new Response(JSON.stringify({ error: error.message }), {
+          headers: { 'Content-Type': 'application/json' },
+          status: 500,
+        });
+      }
+    } else {
+      return new Response('Method Not Allowed', { status: 405 });
+    }
+};
