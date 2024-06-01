@@ -138,26 +138,34 @@ const App = () => {
     if (!fileToDelete) return;
   
     try {
-      console.log('Deleting file:', fileToDelete);  // Debugging
+      console.log('Deleting file from R2:', fileToDelete);  // Debugging
       const response = await axios.post('/delete_from_R2', {
         method: 'DELETE',
         fileName: fileToDelete.filePath
       });
   
       if (response.status === 200) {
-        setFiles(files.filter((file) => file.id !== id));
-        if (selectedFile?.id === id) {
-          setSelectedFile(null);
+        console.log('Deleting file from D1 database...');  // Debugging
+        const dbResponse = await axios.post('/delete_from_D1', { id });
+  
+        if (dbResponse.status === 200) {
+          setFiles(files.filter((file) => file.id !== id));
+          if (selectedFile?.id === id) {
+            setSelectedFile(null);
+          }
+          toast.info("File deleted successfully", { autoClose: 2000 });
+        } else {
+          throw new Error("Failed to delete file info from the database");
         }
-        toast.info("File deleted successfully", { autoClose: 2000 });
       } else {
-        throw new Error(response.data.error || 'Error deleting file');
+        throw new Error(response.data.error || 'Error deleting file from R2');
       }
     } catch (error) {
       toast.error("Error deleting file: " + error.message, { autoClose: 2000 });
-      console.error(error.message);
+      console.error("File Deletion Error:", error);
     }
   };
+  
   
 
   const handleFileDownload = async (file) => {
