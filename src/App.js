@@ -124,11 +124,17 @@ const App = () => {
     try {
       const response = await axios.get(`/download_file_from_bucket?fileName=${file.filePath}`);
       const { signedUrl } = response.data;
-
-      // Trigger the download using an anchor element
+  
+      // Fetch the file using the signed URL
+      const fileResponse = await axios.get(signedUrl, {
+        responseType: 'blob', // Ensure we get the file as a blob
+      });
+  
+      // Create a URL for the file blob and trigger the download
+      const fileURL = window.URL.createObjectURL(new Blob([fileResponse.data]));
       const link = document.createElement('a');
-      link.href = signedUrl;
-      link.download = file.name; // This sets the name for the downloaded file
+      link.href = fileURL;
+      link.setAttribute('download', file.name); // Set the file name for download
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -137,6 +143,7 @@ const App = () => {
       console.error(error.message);
     }
   };
+  
 
   async function getSignedUrlForFile(key, bucket, action = "putObject") {
     try {
