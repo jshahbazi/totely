@@ -17,17 +17,6 @@ const App = () => {
     fetchFilesFromD1();
   }, []);
 
-  async function addOrRetrieveFile(dataToSave) {
-    const options = {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    };
-    const result = await axios.post("/write_to_D1", dataToSave, options);
-    return result.data;
-  }
-
-
   const fetchFilesFromD1 = async () => {
     try {
       const response = await axios.get("/get_files_from_D1");
