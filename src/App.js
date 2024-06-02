@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import FileUpload from './components/FileUpload';
 import FileList from './components/FileList';
 import FileDetail from './components/FileDetail';
+import SearchComponent from './components/SearchComponent';
 import { Container } from './styles';
 import { toast } from "react-toastify";
 import axios from "axios";
@@ -10,6 +11,7 @@ import axios from "axios";
 const App = () => {
   const [files, setFiles] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
+  const [searchResults, setSearchResults] = useState([]);
 
   useEffect(() => {
     fetchFilesFromD1();
@@ -196,6 +198,10 @@ const App = () => {
     }
   };
 
+  const handleSearchResults = (results) => {
+    setSearchResults(results);
+  };  
+
   async function hashImage(file) {
     const arrayBuffer = await file.arrayBuffer();
     const crypto = window.crypto;
@@ -226,9 +232,16 @@ const App = () => {
   return (
     <Container>
       <h1>Digital Asset Manager</h1>
+      <SearchComponent onSearchResults={handleSearchResults} />
       <FileUpload onFileUpload={handleFileUpload} />
       <FileList files={files} onFileClick={handleFileClick} onFileDelete={handleFileDelete} onFileDownload={handleFileDownload} />
       {selectedFile && <FileDetail file={selectedFile} />}
+      {searchResults.length > 0 && (
+        <div>
+          <h2>Search Results:</h2>
+          <FileList files={searchResults} onFileClick={handleFileClick} onFileDelete={handleFileDelete} onFileDownload={handleFileDownload} />
+        </div>
+      )}
     </Container>
   );
 };
