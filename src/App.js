@@ -103,9 +103,9 @@ const App = () => {
 
   const vectorizeFile = async (file) => {
     try {
-      const response = await axios.post('/vectorize_file', { filePath: file.filePath, bucket: file.bucket });
-      const { vector } = response.data;
-      console.log('File vector:', vector); // Print the vector in the console
+      const response = await axios.post('/vectorize_file', { filePath: file.filePath, fileType: file.type, fileId: file.id, fileName: file.name, bucket: file.bucket });
+      const { inserted } = response.data;
+      console.log('File vector inserted:', inserted); // Print the vector in the console
     } catch (error) {
       toast.error("Error vectorizing file: " + error.message, { autoClose: 2000 });
       console.error("Vectorization Error:", error);
