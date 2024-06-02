@@ -39,13 +39,9 @@ export const onRequestPost = async ({ request, env }) => {
 
     const vector_output = await replicate.run("daanelson/imagebind:0383f62e173dc821ec52663ed22a076d9c970549c209666ac3db181618b7a304", { input });
 
-    // convert vector_output to a number[] array
-    const vector_output_array = vector_output.split(',').map(Number);
-    
-
-    const vector =
+    const vector_to_insert =
         { id: fileId, 
-          values: vector_output_array, 
+          values: vector_output, 
           metadata: 
             { path: filePath, 
               format: fileType, 
@@ -54,9 +50,9 @@ export const onRequestPost = async ({ request, env }) => {
             } 
         };
 
-    console.log(vector);
+    console.log(vector_to_insert);
 
-    const inserted = await env.VECTORIZE_INDEX.insert(vector);
+    const inserted = await env.VECTORIZE_INDEX.insert(vector_to_insert);
 
 
     return new Response(JSON.stringify({ inserted: inserted }), {
