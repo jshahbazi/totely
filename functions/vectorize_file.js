@@ -52,10 +52,11 @@ export const onRequestPost = async ({ request, env }) => {
 
     console.log(vector_to_insert);
 
-    const inserted = await env.VECTORIZE_INDEX.insert(vector_to_insert);
+    let rows_inserted = await env.VECTORIZE_INDEX.insert(vector_to_insert);
+    console.log('File vector rows_inserted:', rows_inserted);
 
 
-    return new Response(JSON.stringify({ inserted: inserted }), {
+    return new Response(JSON.stringify({ rows_inserted: rows_inserted }), {
         headers: { 'Content-Type': 'application/json' },
     });
 };
