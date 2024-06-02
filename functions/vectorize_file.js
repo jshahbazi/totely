@@ -52,7 +52,7 @@ export const onRequestPost = async ({ request, env }) => {
 
     console.log(vector_to_insert);
 
-    let rows_inserted = await env.VECTORIZE_INDEX.insert(vector_to_insert);
+    const rows_inserted = await env.TOTELY_VECTORIZE_INDEX.insert(vector_to_insert);
     console.log('File vector rows_inserted:', rows_inserted);
 
 

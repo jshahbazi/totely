@@ -8,7 +8,7 @@ export const onRequestPost = async ({ request, env }) => {
   
       console.log(`Deleting file with id: ${id} from D1 database`); // Debug logging
   
-      const result = await env.TOTELY.prepare(
+      const result = await env.TOTELY_D1.prepare(
         `DELETE FROM files WHERE id = ?`
       )
         .bind(id)

@@ -2,7 +2,7 @@ export const onRequestPost = async ({ request, env, ctx }) => {
   const dataToSave = await request.json();
 
   try {
-    const result = await env.TOTELY.prepare(
+    const result = await env.TOTELY_D1.prepare(
       `INSERT INTO files (id, name, size, type, last_modified, hash, extension, file_path, bucket) VALUES 
      (?, ?, ?, ?, ?, ?, ?, ?, ?)`
     )
@@ -30,7 +30,7 @@ export const onRequestPost = async ({ request, env, ctx }) => {
 
   } catch (e) {
     if (e.message.includes("UNIQUE constraint failed")) {
-      const d1_response = await env.TOTELY.prepare("SELECT file_path FROM files WHERE hash = ?").bind(dataToSave.hash).run();
+      const d1_response = await env.TOTELY_D1.prepare("SELECT file_path FROM files WHERE hash = ?").bind(dataToSave.hash).run();
       const file_location = d1_response.results[0].file_path;
       let response = null;
       if (d1_response.meta.rows_read === 0) {

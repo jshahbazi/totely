@@ -1,6 +1,6 @@
 export const onRequestGet = async ({ env }) => {
     try {
-      const result = await env.TOTELY.prepare("SELECT * FROM files").run();
+      const result = await env.TOTELY_D1.prepare("SELECT * FROM files").run();
   
       if (result.meta.rows_read === 0) {
         return new Response(JSON.stringify([]), { status: 200 });
