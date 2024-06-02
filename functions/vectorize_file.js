@@ -23,12 +23,16 @@ export const onRequestPost = async ({ request, env }) => {
     Key: filePath,
   });
 
-  const input = await getSignedUrl(r2, getObjectCommand, { 
+  const signedUrl = await getSignedUrl(r2, getObjectCommand, { 
     expiresIn: 60,
     headers: {
       'Content-Disposition': `attachment; filename="${filePath}"` // Ensure the correct filename is suggested
     }
   });  
+
+  const input = {
+    input: signedUrl
+  };
 
   const output = await replicate.run("daanelson/imagebind:0383f62e173dc821ec52663ed22a076d9c970549c209666ac3db181618b7a304", { input });
 
