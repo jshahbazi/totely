@@ -8,7 +8,7 @@ export const onRequestPost = async ({ request, env }) => {
     const { query } = await request.json();
 
     const input = {
-        input: query
+        text_input: query
     };
 
     const vector_output = await replicate.run("daanelson/text-to-vector:0383f62e173dc821ec52663ed22a076d9c970549c209666ac3db181618b7a304", { input });
