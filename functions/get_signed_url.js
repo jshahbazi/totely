@@ -27,7 +27,7 @@ export const onRequestGet = async ({ request, env }) => {
     const signedUrl = await getSignedUrl(r2, getObjectCommand, { 
       expiresIn: 60,
       headers: {
-        'Content-Disposition': `attachment; filename="${fileName}"` // Ensure the correct filename is suggested
+        'Content-Disposition': `attachment; filename="${fileName}"` 
       }
     });
 
