@@ -39,9 +39,12 @@ export const onRequestPost = async ({ request, env }) => {
 
     const vector_output = await replicate.run("daanelson/imagebind:0383f62e173dc821ec52663ed22a076d9c970549c209666ac3db181618b7a304", { input });
 
+    const vector = vector_output.map(item => Number(item));
+    console.log(`Converted Vector: ${JSON.stringify(vector)}`);
+
     const vector_to_insert =
         { id: fileId, 
-          values: vector_output, 
+          values: vector, 
           metadata: 
             { path: filePath, 
               format: fileType, 
