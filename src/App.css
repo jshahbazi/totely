@@ -36,3 +36,24 @@
     transform: rotate(360deg);
   }
 }
+
+.search-results {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.search-result-item {
+  margin: 10px;
+  cursor: pointer;
+  text-align: center;
+}
+
+.thumbnail {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+}
+
+.file-name {
+  margin-top: 5px;
+}

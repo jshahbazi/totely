@@ -4,6 +4,7 @@ import FileUpload from './components/FileUpload';
 import FileList from './components/FileList';
 import FileDetail from './components/FileDetail';
 import SearchComponent from './components/SearchComponent';
+import SearchResult from './components/SearchResult';
 import { Container } from './styles';
 import { toast } from "react-toastify";
 import axios from "axios";
@@ -198,10 +199,6 @@ const App = () => {
     }
   };
 
-  const handleSearchResults = (results) => {
-    setSearchResults(results);
-  };  
-
   async function hashImage(file) {
     const arrayBuffer = await file.arrayBuffer();
     const crypto = window.crypto;
@@ -229,6 +226,10 @@ const App = () => {
     return mimeToExtension[mimeType] || null;
   }
 
+  const handleSearchResults = (results) => {
+    setSearchResults(results);
+  };
+
   return (
     <Container>
       <h1>Digital Asset Manager</h1>
@@ -239,7 +240,7 @@ const App = () => {
       {searchResults.length > 0 && (
         <div>
           <h2>Search Results:</h2>
-          <FileList files={searchResults} onFileClick={handleFileClick} onFileDelete={handleFileDelete} onFileDownload={handleFileDownload} />
+          <SearchResult files={searchResults} onFileClick={handleFileClick} />
         </div>
       )}
     </Container>
