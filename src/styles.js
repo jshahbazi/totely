@@ -99,3 +99,22 @@ export const FileScore = styled.div`
   font-size: 0.9em;
   color: #666;
 `;
+
+export const TextInput = styled.input`
+  background-color: #fff;
+  border: 2px solid #4CAF50;
+  color: #4CAF50;
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  border-radius: 12px;
+  outline: none;
+  transition: border-color 0.3s ease;
+
+  &:focus {
+    border-color: #45a049;
+  }
+`;

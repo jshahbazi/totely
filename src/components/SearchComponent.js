@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { toast } from "react-toastify";
 import axios from "axios";
+import { Button, TextInput } from '../styles';
 
 const SearchComponent = ({ onSearchResults }) => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -19,13 +20,13 @@ const SearchComponent = ({ onSearchResults }) => {
   return (
     <div>
       <form onSubmit={handleSearch}>
-        <input
+        <TextInput
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Search..."
         />
-        <button type="submit">Search</button>
+        <Button type="submit">Search</Button>
       </form>
     </div>
   );
