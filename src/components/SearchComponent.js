@@ -41,7 +41,7 @@ const SearchComponent = ({ onSearchResults }) => {
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Search..."
         />
-        <div>{vectorSearchContent()}</div>
+        {vectorSearchContent()}
       </form>
     </div>
   );

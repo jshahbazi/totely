@@ -1,11 +1,24 @@
 import styled from 'styled-components';
 
 export const Container = styled.div`
-  display: flex;
-  max-width: 100%;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
   font-family: Arial, sans-serif;
+  display: flex;
+  align-items: flex-start;
+`;
+
+export const LeftContainer = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+`;
+
+export const RightContainer = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 `;
 
 export const Sidebar = styled.div`

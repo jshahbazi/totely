@@ -5,7 +5,7 @@ import FileList from './components/FileList';
 import FileDetail from './components/FileDetail';
 import SearchComponent from './components/SearchComponent';
 import SearchResult from './components/SearchResult';
-import { Container, Divider, Sidebar, MainContent } from './styles';
+import { Container, LeftContainer, RightContainer, Divider } from './styles';
 import { toast } from "react-toastify";
 import axios from "axios";
 
@@ -232,18 +232,18 @@ const App = () => {
 
   return (
     <Container>
-      <Sidebar>
+      <LeftContainer>
         <FileUpload onFileUpload={handleFileUpload} />
         <FileList files={files} onFileClick={handleFileClick} onFileDelete={handleFileDelete} onFileDownload={handleFileDownload} />
-      </Sidebar>
+      </LeftContainer>
       <Divider />
-      <MainContent>
+      <RightContainer>
         <SearchComponent onSearchResults={handleSearchResults} />
         {selectedFile && <FileDetail file={selectedFile} />}
         {searchResults.length > 0 && (
           <SearchResult files={searchResults} onFileClick={handleFileClick} />
         )}
-      </MainContent>
+      </RightContainer>
     </Container>
   );
 };
