@@ -5,7 +5,7 @@ import FileList from './components/FileList';
 import FileDetail from './components/FileDetail';
 import SearchComponent from './components/SearchComponent';
 import SearchResult from './components/SearchResult';
-import { Container } from './styles';
+import { Container, Sidebar, MainContent } from './styles';
 import { toast } from "react-toastify";
 import axios from "axios";
 
@@ -232,17 +232,17 @@ const App = () => {
 
   return (
     <Container>
-      <h1>Digital Asset Manager</h1>
-      <SearchComponent onSearchResults={handleSearchResults} />
-      <FileUpload onFileUpload={handleFileUpload} />
-      <FileList files={files} onFileClick={handleFileClick} onFileDelete={handleFileDelete} onFileDownload={handleFileDownload} />
-      {selectedFile && <FileDetail file={selectedFile} />}
-      {searchResults.length > 0 && (
-        <div>
-          <h2>Search Results:</h2>
+      <Sidebar>
+        <FileUpload onFileUpload={handleFileUpload} />
+        <FileList files={files} onFileClick={handleFileClick} onFileDelete={handleFileDelete} onFileDownload={handleFileDownload} />
+      </Sidebar>
+      <MainContent>
+        <SearchComponent onSearchResults={handleSearchResults} />
+        {selectedFile && <FileDetail file={selectedFile} />}
+        {searchResults.length > 0 && (
           <SearchResult files={searchResults} onFileClick={handleFileClick} />
-        </div>
-      )}
+        )}
+      </MainContent>
     </Container>
   );
 };

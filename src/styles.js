@@ -1,10 +1,20 @@
 import styled from 'styled-components';
 
 export const Container = styled.div`
-  max-width: 800px;
+  display: flex;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
   font-family: Arial, sans-serif;
+`;
+
+export const Sidebar = styled.div`
+  flex: 1;
+  margin-right: 20px;
+`;
+
+export const MainContent = styled.div`
+  flex: 2;
 `;
 
 export const Button = styled.button`
@@ -60,4 +70,32 @@ export const FileDetailContainer = styled.div`
 
 export const FileName = styled.span`
   font-weight: bold;
+`;
+
+export const SearchResultsContainer = styled.div`
+  margin-top: 20px;
+`;
+
+export const SearchResultItem = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 10px;
+  cursor: pointer;
+  text-align: center;
+`;
+
+export const Thumbnail = styled.img`
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+`;
+
+export const FileInfo = styled.div`
+  margin-top: 5px;
+`;
+
+export const FileScore = styled.div`
+  font-size: 0.9em;
+  color: #666;
 `;

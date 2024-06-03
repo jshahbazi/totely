@@ -1,19 +1,20 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { SearchResultsContainer, SearchResultItem, Thumbnail, FileInfo, FileScore } from '../styles';
 
 const SearchResult = ({ files, onFileClick }) => {
   return (
-    <div className="search-results">
+    <SearchResultsContainer>
       {files.map(file => (
-        <div key={file.id} className="search-result-item" onClick={() => onFileClick(file)}>
-          <img src={file.signedUrl} alt={file.name} className="thumbnail" />
-          <div className="file-info">
+        <SearchResultItem key={file.id} onClick={() => onFileClick(file)}>
+          <Thumbnail src={file.signedUrl} alt={file.name} />
+          <FileInfo>
             <div className="file-name">{file.name}</div>
-            <div className="file-score">Score: {file.score.toFixed(2)}</div>
-          </div>
-        </div>
+            <FileScore>Score: {file.score.toFixed(2)}</FileScore>
+          </FileInfo>
+        </SearchResultItem>
       ))}
-    </div>
+    </SearchResultsContainer>
   );
 };
 
