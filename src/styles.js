@@ -6,7 +6,8 @@ export const Container = styled.div`
   padding: 20px;
   font-family: Arial, sans-serif;
   display: flex;
-  align-items: flex-start;
+  align-items: flex-start; 
+  height: 100vh;
 `;
 
 export const LeftContainer = styled.div`
@@ -19,6 +20,13 @@ export const RightContainer = styled.div`
   flex: 1;
   display: flex;
   flex-direction: column;
+`;
+
+export const Divider = styled.div`
+  width: 1px;
+  background-color: #ddd;
+  margin: 0 20px;
+  align-self: stretch;
 `;
 
 export const Sidebar = styled.div`
@@ -130,11 +138,4 @@ export const TextInput = styled.input`
   &:focus {
     border-color: #45a049;
   }
-`;
-
-export const Divider = styled.div`
-  height: 100%;
-  width: 1px;
-  background-color: #ddd;
-  margin: 0 20px;
 `;
