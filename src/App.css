@@ -54,6 +54,16 @@
   object-fit: cover;
 }
 
-.file-name {
+.file-info {
   margin-top: 5px;
 }
+
+.file-name {
+  font-weight: bold;
+}
+
+.file-score {
+  font-size: 0.9em;
+  color: #666;
+}
+
