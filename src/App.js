@@ -14,6 +14,7 @@ const App = () => {
   const [files, setFiles] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
   const [searchResults, setSearchResults] = useState([]);
+  const [searching, setSearching] = useState(false);
 
   useEffect(() => {
     fetchFilesFromD1();
@@ -228,8 +229,30 @@ const App = () => {
   }
 
   const handleSearchResults = (results) => {
+    setSearching(true);
     setSearchResults(results);
+    setSearching(false);
   };
+
+
+  const vectorSearchContent = () => {
+    switch (true) {
+      case searching:
+        return <Spinner />;
+      case searchResults.length > 0:
+        return (
+          <div className="container">
+            <SearchResult files={searchResults} onFileClick={handleFileClick} />
+          </div>
+        );
+      default:
+        return (
+          <div>
+          </div>
+        );
+    }
+  };
+
 
   return (
     <Container>
@@ -240,9 +263,7 @@ const App = () => {
       <MainContent>
         <SearchComponent onSearchResults={handleSearchResults} />
         {selectedFile && <FileDetail file={selectedFile} />}
-        {(searchResults.length === 0 && <Spinner />) || (searchResults.length > 0 && (
-          <SearchResult files={searchResults} onFileClick={handleFileClick} />
-        ))}
+        <div>{vectorSearchContent()}</div>
       </MainContent>
     </Container>
   );
