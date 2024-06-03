@@ -118,3 +118,10 @@ export const TextInput = styled.input`
     border-color: #45a049;
   }
 `;
+
+export const Divider = styled.div`
+  height: 100%;
+  width: 1px;
+  background-color: #ddd;
+  margin: 0 20px;
+`;
