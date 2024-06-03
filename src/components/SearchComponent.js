@@ -18,30 +18,20 @@ const SearchComponent = ({ onSearchResults }) => {
     } catch (error) {
       toast.error("Error performing search: " + error.message, { autoClose: 2000 });
       console.error("Search Error:", error);
-    }
-  };
-
-  const vectorSearchContent = () => {
-    switch (true) {
-      case searching:
-        return <Spinner />;
-      default:
-        return (
-            <Button type="submit">Search</Button>
-        );
+      setSearching(false);
     }
   };
 
   return (
-    <div>
-      <form onSubmit={handleSearch}>
+    <div className="search-container">
+      <form onSubmit={handleSearch} className="search-form">
         <TextInput
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Search..."
         />
-        {vectorSearchContent()}
+        {searching ? <Spinner /> : <Button type="submit">Search</Button>}
       </form>
     </div>
   );
