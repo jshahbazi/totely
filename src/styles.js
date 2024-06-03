@@ -2,7 +2,7 @@ import styled from 'styled-components';
 
 export const Container = styled.div`
   display: flex;
-  max-width: 1200px;
+  max-width: 100%;
   margin: 0 auto;
   padding: 20px;
   font-family: Arial, sans-serif;
@@ -79,7 +79,7 @@ export const SearchResultsContainer = styled.div`
 export const SearchResultItem = styled.div`
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: left;
   margin: 10px;
   cursor: pointer;
   text-align: center;
