@@ -124,7 +124,7 @@ export const FileScore = styled.div`
 export const TextInput = styled.input`
   background-color: #fff;
   border: 2px solid #4CAF50;
-  color: #4CAF50;
+  color: #000000;
   padding: 15px 32px;
   text-align: center;
   text-decoration: none;

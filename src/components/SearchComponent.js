@@ -31,7 +31,7 @@ const SearchComponent = ({ onSearchResults }) => {
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Search..."
         />
-        {searching ? <Spinner /> : <Button type="submit">Search</Button>}
+        {searching ?  <Button type=""><Spinner /></Button> : <Button type="submit">Search</Button>}
       </form>
     </div>
   );
