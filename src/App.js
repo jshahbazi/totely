@@ -172,7 +172,7 @@ const App = () => {
 
   const handleFileDownload = async (file) => {
     try {
-      const response = await axios.get(`/get_signed_url?fileName=${file.filePath}`);
+      const response = await axios.get(`/download_from_R2?fileName=${file.filePath}`);
       if (!response.data || !response.data.signedUrl) {
         throw new Error("Signed URL not received");
       }
