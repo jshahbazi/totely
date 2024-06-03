@@ -4,7 +4,7 @@ import { faSpinner } from '@fortawesome/free-solid-svg-icons';
 
 const Spinner = () => (
   <div className='spinner'>
-    <FontAwesomeIcon icon={faSpinner} size='4x' color='#1D3C4C' />
+    <FontAwesomeIcon icon={faSpinner} size='3x' color='#1D3C4C' spin />
   </div>
 );
 

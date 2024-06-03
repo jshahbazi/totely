@@ -68,20 +68,12 @@
 }
 
 .spinner {
-  animation: spin 1.2s infinite linear;
-}
-
-@-webkit-keyframes spin {
-  0% {
-    -webkit-transform: rotate(0deg)
-  }
-
-  100% {
-    -webkit-transform: rotate(360deg)
-  }
+  display: inline-block;
 }
 
 .spinner svg {
   background: #f2f2f2;
-  border-radius: 50%
+  border-radius: 50%;
 }
+
+
