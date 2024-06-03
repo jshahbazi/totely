@@ -82,7 +82,7 @@ export const SearchResultItem = styled.div`
   align-items: left;
   margin: 10px;
   cursor: pointer;
-  text-align: center;
+  text-align: left;
 `;
 
 export const Thumbnail = styled.img`
