@@ -233,13 +233,14 @@ const App = () => {
   return (
     <Container>
       <LeftContainer>
-        <FileUpload onFileUpload={handleFileUpload} />
+        <div><FileUpload onFileUpload={handleFileUpload} /></div>
+        
+        <div>{selectedFile && <FileDetail file={selectedFile} />}</div>
         <FileList files={files} onFileClick={handleFileClick} onFileDelete={handleFileDelete} onFileDownload={handleFileDownload} />
       </LeftContainer>
       <Divider />
       <RightContainer>
         <SearchComponent onSearchResults={handleSearchResults} />
-        {selectedFile && <FileDetail file={selectedFile} />}
         {searchResults.length > 0 && (
           <SearchResult files={searchResults} onFileClick={handleFileClick} />
         )}
