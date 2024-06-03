@@ -67,3 +67,6 @@
   color: #666;
 }
 
+.spinner {
+  animation: spin 1.2s infinite linear;
+}

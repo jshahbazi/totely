@@ -5,6 +5,7 @@ import FileList from './components/FileList';
 import FileDetail from './components/FileDetail';
 import SearchComponent from './components/SearchComponent';
 import SearchResult from './components/SearchResult';
+import Spinner from "./components/Spinner";
 import { Container, Sidebar, MainContent } from './styles';
 import { toast } from "react-toastify";
 import axios from "axios";
@@ -239,9 +240,9 @@ const App = () => {
       <MainContent>
         <SearchComponent onSearchResults={handleSearchResults} />
         {selectedFile && <FileDetail file={selectedFile} />}
-        {searchResults.length > 0 && (
+        {(searchResults.length === 0 && <Spinner />) || (searchResults.length > 0 && (
           <SearchResult files={searchResults} onFileClick={handleFileClick} />
-        )}
+        ))}
       </MainContent>
     </Container>
   );
